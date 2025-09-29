@@ -14,6 +14,8 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { NewFolderModal } from './NewFolderModal'
+import { FileUploadModal } from './FileUploadModal'
+import { FilePreviewModal } from './FilePreviewModal'
 import {
   Breadcrumb,
   BreadcrumbEllipsis,
@@ -60,6 +62,9 @@ export default function DocumentView({ currentPath = 'Root', title = 'Welcome to
   const searchParams = useSearchParams()
   const [searchQuery, setSearchQuery] = useState('')
   const [isNewFolderModalOpen, setIsNewFolderModalOpen] = useState(false)
+  const [isFileUploadModalOpen, setIsFileUploadModalOpen] = useState(false)
+  const [isFilePreviewModalOpen, setIsFilePreviewModalOpen] = useState(false)
+  const [selectedFile, setSelectedFile] = useState<FileType | null>(null)
   const [folders, setFolders] = useState<FolderType[]>([])
   const [files, setFiles] = useState<FileType[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -139,6 +144,15 @@ export default function DocumentView({ currentPath = 'Root', title = 'Welcome to
     setFolders(prev => [...prev, folder])
   }
 
+  const handleFileUploaded = (file: FileType) => {
+    setFiles(prev => [...prev, file])
+  }
+
+  const handleFileClick = (file: FileType) => {
+    setSelectedFile(file)
+    setIsFilePreviewModalOpen(true)
+  }
+
   const handleFolderClick = (folderId: string) => {
     setCurrentFolderId(folderId)
     // Stay on the current page, just update the folder parameter
@@ -180,7 +194,11 @@ export default function DocumentView({ currentPath = 'Root', title = 'Welcome to
                 New Folder
               </Button>
             )}
-            <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+            <Button 
+              size="sm" 
+              className="bg-blue-600 hover:bg-blue-700"
+              onClick={() => setIsFileUploadModalOpen(true)}
+            >
               <Upload className="h-4 w-4 mr-2" />
               Upload Files
             </Button>
@@ -274,7 +292,10 @@ export default function DocumentView({ currentPath = 'Root', title = 'Welcome to
                   New Folder
                 </Button>
               )}
-              <Button className="bg-blue-600 hover:bg-blue-700">
+              <Button 
+                className="bg-blue-600 hover:bg-blue-700"
+                onClick={() => setIsFileUploadModalOpen(true)}
+              >
                 <Upload className="h-4 w-4 mr-2" />
                 Upload Files
               </Button>
@@ -315,6 +336,7 @@ export default function DocumentView({ currentPath = 'Root', title = 'Welcome to
               <div
                 key={file.id}
                 className="flex items-center p-3 rounded-lg hover:bg-gray-50 cursor-pointer group"
+                onClick={() => handleFileClick(file)}
               >
                 <FileText className="h-8 w-8 text-gray-500 mr-4" />
                 <div className="flex-1">
@@ -325,6 +347,10 @@ export default function DocumentView({ currentPath = 'Root', title = 'Welcome to
                   variant="ghost"
                   size="sm"
                   className="opacity-0 group-hover:opacity-100"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    // Handle file options menu
+                  }}
                 >
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
@@ -340,6 +366,24 @@ export default function DocumentView({ currentPath = 'Root', title = 'Welcome to
         onClose={() => setIsNewFolderModalOpen(false)}
         onFolderCreated={handleFolderCreated}
         parentId={currentFolderId || undefined}
+      />
+
+      {/* File Upload Modal */}
+      <FileUploadModal
+        isOpen={isFileUploadModalOpen}
+        onClose={() => setIsFileUploadModalOpen(false)}
+        onFileUploaded={handleFileUploaded}
+        folderId={currentFolderId || undefined}
+      />
+
+      {/* File Preview Modal */}
+      <FilePreviewModal
+        isOpen={isFilePreviewModalOpen}
+        onClose={() => {
+          setIsFilePreviewModalOpen(false)
+          setSelectedFile(null)
+        }}
+        file={selectedFile}
       />
     </div>
   )

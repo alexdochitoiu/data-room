@@ -46,4 +46,7 @@ next-env.d.ts
 *.sqlite
 *.sqlite3
 
+# uploads
+/uploads
+
 /src/generated/prisma
