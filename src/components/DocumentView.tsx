@@ -26,6 +26,8 @@ import {
 
 interface DocumentViewProps {
   currentPath?: string
+  title?: string
+  showOnlyFiles?: boolean
 }
 
 interface FolderType {
@@ -53,16 +55,16 @@ interface FileType {
   modifiedAt: string
 }
 
-export default function DocumentView({ currentPath = 'Root' }: DocumentViewProps) {
+export default function DocumentView({ currentPath = 'Root', title = 'Welcome to DataRoom', showOnlyFiles = false }: DocumentViewProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [searchQuery, setSearchQuery] = useState('')
   const [isNewFolderModalOpen, setIsNewFolderModalOpen] = useState(false)
   const [folders, setFolders] = useState<FolderType[]>([])
+  const [files, setFiles] = useState<FileType[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null)
   const [breadcrumbs, setBreadcrumbs] = useState<BreadcrumbData[]>([])
-  const files: FileType[] = []
 
   // Initialize current folder from URL
   useEffect(() => {
@@ -70,11 +72,14 @@ export default function DocumentView({ currentPath = 'Root' }: DocumentViewProps
     setCurrentFolderId(folderId)
   }, [searchParams])
 
-  // Load folders and breadcrumbs when current folder changes
+  // Load folders, files and breadcrumbs when current folder changes
   useEffect(() => {
-    loadFolders(currentFolderId)
+    if (!showOnlyFiles) {
+      loadFolders(currentFolderId)
+    }
+    loadFiles(currentFolderId)
     loadBreadcrumbs(currentFolderId)
-  }, [currentFolderId])
+  }, [currentFolderId, showOnlyFiles])
 
   const loadFolders = async (parentId: string | null = null) => {
     setIsLoading(true)
@@ -89,6 +94,24 @@ export default function DocumentView({ currentPath = 'Root' }: DocumentViewProps
       }
     } catch (error) {
       console.error('Failed to load folders:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const loadFiles = async (folderId: string | null = null) => {
+    setIsLoading(true)
+    try {
+      const url = folderId 
+        ? `/api/files?folderId=${folderId}` 
+        : '/api/files'
+      const response = await fetch(url)
+      if (response.ok) {
+        const data = await response.json()
+        setFiles(data)
+      }
+    } catch (error) {
+      console.error('Failed to load files:', error)
     } finally {
       setIsLoading(false)
     }
@@ -118,17 +141,25 @@ export default function DocumentView({ currentPath = 'Root' }: DocumentViewProps
 
   const handleFolderClick = (folderId: string) => {
     setCurrentFolderId(folderId)
-    router.push(`/documents?folder=${folderId}`)
+    // Stay on the current page, just update the folder parameter
+    const currentPath = window.location.pathname
+    router.push(`${currentPath}?folder=${folderId}`)
   }
 
   const handleBreadcrumbNavigate = (folderId: string | null) => {
     setCurrentFolderId(folderId)
-    const url = folderId ? `/documents?folder=${folderId}` : '/documents'
+    // Stay on the current page, just update or remove the folder parameter
+    const currentPath = window.location.pathname
+    const url = folderId ? `${currentPath}?folder=${folderId}` : currentPath
     router.push(url)
   }
 
-  const filteredFolders = folders.filter(folder =>
+  const filteredFolders = showOnlyFiles ? [] : folders.filter(folder =>
     folder.name.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
+  const filteredFiles = files.filter(file =>
+    file.name.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
   return (
@@ -136,17 +167,19 @@ export default function DocumentView({ currentPath = 'Root' }: DocumentViewProps
       {/* Header */}
       <div className="border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-semibold text-gray-900">Documents</h1>
+          <h1 className="text-2xl font-semibold text-gray-900">{title}</h1>
           
           <div className="flex items-center space-x-3">
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => setIsNewFolderModalOpen(true)}
-            >
-              <FolderPlus className="h-4 w-4 mr-2" />
-              New Folder
-            </Button>
+            {!showOnlyFiles && (
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setIsNewFolderModalOpen(true)}
+              >
+                <FolderPlus className="h-4 w-4 mr-2" />
+                New Folder
+              </Button>
+            )}
             <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
               <Upload className="h-4 w-4 mr-2" />
               Upload Files
@@ -217,23 +250,30 @@ export default function DocumentView({ currentPath = 'Root' }: DocumentViewProps
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mb-4"></div>
             <p className="text-gray-500">Loading...</p>
           </div>
-        ) : filteredFolders.length === 0 && files.length === 0 ? (
+        ) : filteredFolders.length === 0 && filteredFiles.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center">
             <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6">
               <Folder className="h-12 w-12 text-gray-400" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No files or folders yet</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              {showOnlyFiles ? 'No files yet' : 'No files or folders yet'}
+            </h3>
             <p className="text-gray-500 mb-8 max-w-sm">
-              Get started by uploading files or creating folders to organize your documents.
+              {showOnlyFiles 
+                ? 'Upload files to get started with your data room.'
+                : 'Get started by uploading files or creating folders to organize your documents.'
+              }
             </p>
             <div className="flex space-x-3">
-              <Button 
-                variant="outline"
-                onClick={() => setIsNewFolderModalOpen(true)}
-              >
-                <FolderPlus className="h-4 w-4 mr-2" />
-                New Folder
-              </Button>
+              {!showOnlyFiles && (
+                <Button 
+                  variant="outline"
+                  onClick={() => setIsNewFolderModalOpen(true)}
+                >
+                  <FolderPlus className="h-4 w-4 mr-2" />
+                  New Folder
+                </Button>
+              )}
               <Button className="bg-blue-600 hover:bg-blue-700">
                 <Upload className="h-4 w-4 mr-2" />
                 Upload Files
@@ -271,7 +311,7 @@ export default function DocumentView({ currentPath = 'Root' }: DocumentViewProps
             ))}
 
             {/* Files */}
-            {files.map((file) => (
+            {filteredFiles.map((file) => (
               <div
                 key={file.id}
                 className="flex items-center p-3 rounded-lg hover:bg-gray-50 cursor-pointer group"
