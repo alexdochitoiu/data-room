@@ -1,17 +1,28 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { 
   FolderPlus, 
   Upload, 
   Folder, 
   FileText,
   MoreHorizontal,
-  Search
+  Search,
+  Home
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { NewFolderModal } from './NewFolderModal'
+import {
+  Breadcrumb,
+  BreadcrumbEllipsis,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
 
 interface DocumentViewProps {
   currentPath?: string
@@ -21,11 +32,18 @@ interface FolderType {
   id: string
   name: string
   path: string
+  parentId?: string | null
   createdAt: string
   _count: {
     children: number
     files: number
   }
+}
+
+interface BreadcrumbData {
+  id: string | null
+  name: string
+  path: string
 }
 
 interface FileType {
@@ -36,20 +54,35 @@ interface FileType {
 }
 
 export default function DocumentView({ currentPath = 'Root' }: DocumentViewProps) {
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const [searchQuery, setSearchQuery] = useState('')
   const [isNewFolderModalOpen, setIsNewFolderModalOpen] = useState(false)
   const [folders, setFolders] = useState<FolderType[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [currentFolderId, setCurrentFolderId] = useState<string | null>(null)
+  const [breadcrumbs, setBreadcrumbs] = useState<BreadcrumbData[]>([])
   const files: FileType[] = []
 
-  // Load folders
+  // Initialize current folder from URL
   useEffect(() => {
-    loadFolders()
-  }, [])
+    const folderId = searchParams.get('folder')
+    setCurrentFolderId(folderId)
+  }, [searchParams])
 
-  const loadFolders = async () => {
+  // Load folders and breadcrumbs when current folder changes
+  useEffect(() => {
+    loadFolders(currentFolderId)
+    loadBreadcrumbs(currentFolderId)
+  }, [currentFolderId])
+
+  const loadFolders = async (parentId: string | null = null) => {
+    setIsLoading(true)
     try {
-      const response = await fetch('/api/folders')
+      const url = parentId 
+        ? `/api/folders?parentId=${parentId}` 
+        : '/api/folders'
+      const response = await fetch(url)
       if (response.ok) {
         const data = await response.json()
         setFolders(data)
@@ -61,21 +94,49 @@ export default function DocumentView({ currentPath = 'Root' }: DocumentViewProps
     }
   }
 
+  const loadBreadcrumbs = async (folderId: string | null) => {
+    if (!folderId) {
+      setBreadcrumbs([])
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/folders/breadcrumbs?folderId=${folderId}`)
+      if (response.ok) {
+        const data = await response.json()
+        setBreadcrumbs(data)
+      }
+    } catch (error) {
+      console.error('Failed to load breadcrumbs:', error)
+      setBreadcrumbs([])
+    }
+  }
+
   const handleFolderCreated = (folder: FolderType) => {
     setFolders(prev => [...prev, folder])
   }
+
+  const handleFolderClick = (folderId: string) => {
+    setCurrentFolderId(folderId)
+    router.push(`/documents?folder=${folderId}`)
+  }
+
+  const handleBreadcrumbNavigate = (folderId: string | null) => {
+    setCurrentFolderId(folderId)
+    const url = folderId ? `/documents?folder=${folderId}` : '/documents'
+    router.push(url)
+  }
+
+  const filteredFolders = folders.filter(folder =>
+    folder.name.toLowerCase().includes(searchQuery.toLowerCase())
+  )
 
   return (
     <div className="flex-1 flex flex-col bg-white">
       {/* Header */}
       <div className="border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center text-sm text-gray-600">
-              <Folder className="h-4 w-4 mr-2" />
-              {currentPath}
-            </div>
-          </div>
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-2xl font-semibold text-gray-900">Documents</h1>
           
           <div className="flex items-center space-x-3">
             <Button 
@@ -92,6 +153,48 @@ export default function DocumentView({ currentPath = 'Root' }: DocumentViewProps
             </Button>
           </div>
         </div>
+        
+        {/* Breadcrumbs - Only show when not at root level */}
+        {breadcrumbs.length > 0 && (
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink 
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    handleBreadcrumbNavigate(null)
+                  }}
+                  className="flex items-center gap-1"
+                >
+                  <Home className="h-4 w-4" />
+                  Home
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              
+              {breadcrumbs.map((item, index) => (
+                <div key={item.id} className="flex items-center">
+                  <BreadcrumbSeparator />
+                  <BreadcrumbItem>
+                    {index === breadcrumbs.length - 1 ? (
+                      <BreadcrumbPage>{item.name}</BreadcrumbPage>
+                    ) : (
+                      <BreadcrumbLink 
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault()
+                          handleBreadcrumbNavigate(item.id)
+                        }}
+                      >
+                        {item.name}
+                      </BreadcrumbLink>
+                    )}
+                  </BreadcrumbItem>
+                </div>
+              ))}
+            </BreadcrumbList>
+          </Breadcrumb>
+        )}
       </div>
 
       {/* Search Bar */}
@@ -114,7 +217,7 @@ export default function DocumentView({ currentPath = 'Root' }: DocumentViewProps
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mb-4"></div>
             <p className="text-gray-500">Loading...</p>
           </div>
-        ) : folders.length === 0 && files.length === 0 ? (
+        ) : filteredFolders.length === 0 && files.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center">
             <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6">
               <Folder className="h-12 w-12 text-gray-400" />
@@ -140,10 +243,11 @@ export default function DocumentView({ currentPath = 'Root' }: DocumentViewProps
         ) : (
           <div className="space-y-4">
             {/* Folders */}
-            {folders.map((folder) => (
+            {filteredFolders.map((folder) => (
               <div
                 key={folder.id}
                 className="flex items-center p-3 rounded-lg hover:bg-gray-50 cursor-pointer group"
+                onClick={() => handleFolderClick(folder.id)}
               >
                 <Folder className="h-8 w-8 text-blue-500 mr-4" />
                 <div className="flex-1">
@@ -156,6 +260,10 @@ export default function DocumentView({ currentPath = 'Root' }: DocumentViewProps
                   variant="ghost"
                   size="sm"
                   className="opacity-0 group-hover:opacity-100"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    // Handle folder options menu
+                  }}
                 >
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
@@ -191,6 +299,7 @@ export default function DocumentView({ currentPath = 'Root' }: DocumentViewProps
         isOpen={isNewFolderModalOpen}
         onClose={() => setIsNewFolderModalOpen(false)}
         onFolderCreated={handleFolderCreated}
+        parentId={currentFolderId || undefined}
       />
     </div>
   )
