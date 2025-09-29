@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '../auth/[...nextauth]/route'
 import { prisma } from '@/lib/prisma'
+import { z } from 'zod'
+
+const renameFileSchema = z.object({
+  id: z.string(),
+  name: z.string().min(1, 'File name is required').max(255, 'File name too long')
+})
 
 export async function GET(request: NextRequest) {
   try {
@@ -53,4 +59,69 @@ function formatDate(date: Date): string {
     month: 'short',
     day: 'numeric'
   }).format(new Date(date))
+}
+
+export async function PUT(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const body = await request.json()
+    const { id, name } = renameFileSchema.parse(body)
+
+    // Get user
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email }
+    })
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    // Check if file exists and belongs to user
+    const existingFile = await prisma.file.findFirst({
+      where: { id, userId: user.id }
+    })
+
+    if (!existingFile) {
+      return NextResponse.json({ error: 'File not found' }, { status: 404 })
+    }
+
+    // Check for duplicate names in the same directory
+    const duplicateFile = await prisma.file.findFirst({
+      where: {
+        name,
+        folderId: existingFile.folderId,
+        userId: user.id,
+        id: { not: id } // Exclude current file
+      }
+    })
+
+    if (duplicateFile) {
+      return NextResponse.json({ error: 'A file with this name already exists in this location' }, { status: 409 })
+    }
+
+    // Update file name
+    const updatedFile = await prisma.file.update({
+      where: { id },
+      data: { name, originalName: name }
+    })
+
+    return NextResponse.json({
+      id: updatedFile.id,
+      name: updatedFile.name,
+      size: formatFileSize(updatedFile.size),
+      modifiedAt: formatDate(updatedFile.updatedAt)
+    })
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: error.issues }, { status: 400 })
+    }
+    
+    console.error('Error renaming file:', error)
+    return NextResponse.json({ error: 'Failed to rename file' }, { status: 500 })
+  }
 }

@@ -9,13 +9,22 @@ import {
   FileText,
   MoreHorizontal,
   Search,
-  Home
+  Home,
+  Edit,
+  Trash2
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { NewFolderModal } from './NewFolderModal'
 import { FileUploadModal } from './FileUploadModal'
 import { FilePreviewModal } from './FilePreviewModal'
+import { RenameModal } from './RenameModal'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import {
   Breadcrumb,
   BreadcrumbEllipsis,
@@ -64,7 +73,9 @@ export default function DocumentView({ currentPath = 'Root', title = 'Welcome to
   const [isNewFolderModalOpen, setIsNewFolderModalOpen] = useState(false)
   const [isFileUploadModalOpen, setIsFileUploadModalOpen] = useState(false)
   const [isFilePreviewModalOpen, setIsFilePreviewModalOpen] = useState(false)
+  const [isRenameModalOpen, setIsRenameModalOpen] = useState(false)
   const [selectedFile, setSelectedFile] = useState<FileType | null>(null)
+  const [itemToRename, setItemToRename] = useState<{id: string, name: string, type: 'folder' | 'file'} | null>(null)
   const [folders, setFolders] = useState<FolderType[]>([])
   const [files, setFiles] = useState<FileType[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -151,6 +162,28 @@ export default function DocumentView({ currentPath = 'Root', title = 'Welcome to
   const handleFileClick = (file: FileType) => {
     setSelectedFile(file)
     setIsFilePreviewModalOpen(true)
+  }
+
+  const handleRenameFolder = (folder: FolderType) => {
+    setItemToRename({ id: folder.id, name: folder.name, type: 'folder' })
+    setIsRenameModalOpen(true)
+  }
+
+  const handleRenameFile = (file: FileType) => {
+    setItemToRename({ id: file.id, name: file.name, type: 'file' })
+    setIsRenameModalOpen(true)
+  }
+
+  const handleItemRenamed = (renamedItem: any) => {
+    if (itemToRename?.type === 'folder') {
+      setFolders(prev => prev.map(folder => 
+        folder.id === renamedItem.id ? { ...folder, ...renamedItem } : folder
+      ))
+    } else if (itemToRename?.type === 'file') {
+      setFiles(prev => prev.map(file => 
+        file.id === renamedItem.id ? { ...file, ...renamedItem } : file
+      ))
+    }
   }
 
   const handleFolderClick = (folderId: string) => {
@@ -317,17 +350,39 @@ export default function DocumentView({ currentPath = 'Root', title = 'Welcome to
                     {folder._count.children} folders, {folder._count.files} files
                   </p>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="opacity-0 group-hover:opacity-100"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    // Handle folder options menu
-                  }}
-                >
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="opacity-0 group-hover:opacity-100"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleRenameFolder(folder)
+                      }}
+                    >
+                      <Edit className="h-4 w-4 mr-2" />
+                      Rename
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        // Handle delete folder
+                      }}
+                      className="text-red-600"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             ))}
 
@@ -343,17 +398,39 @@ export default function DocumentView({ currentPath = 'Root', title = 'Welcome to
                   <h4 className="font-medium text-gray-900">{file.name}</h4>
                   <p className="text-sm text-gray-500">{file.size} • {file.modifiedAt}</p>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="opacity-0 group-hover:opacity-100"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    // Handle file options menu
-                  }}
-                >
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="opacity-0 group-hover:opacity-100"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleRenameFile(file)
+                      }}
+                    >
+                      <Edit className="h-4 w-4 mr-2" />
+                      Rename
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        // Handle delete file
+                      }}
+                      className="text-red-600"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             ))}
           </div>
@@ -384,6 +461,17 @@ export default function DocumentView({ currentPath = 'Root', title = 'Welcome to
           setSelectedFile(null)
         }}
         file={selectedFile}
+      />
+
+      {/* Rename Modal */}
+      <RenameModal
+        isOpen={isRenameModalOpen}
+        onClose={() => {
+          setIsRenameModalOpen(false)
+          setItemToRename(null)
+        }}
+        onRenamed={handleItemRenamed}
+        item={itemToRename}
       />
     </div>
   )
