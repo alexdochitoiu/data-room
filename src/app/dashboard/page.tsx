@@ -1,9 +1,10 @@
 'use client'
 
 import { useSession } from 'next-auth/react'
-import Navigation from '@/components/Navigation'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
+import { Upload, Activity, Shield } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 export default function Dashboard() {
   const { data: session, status } = useSession()
@@ -16,7 +17,7 @@ export default function Dashboard() {
 
   if (status === 'loading') {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="flex items-center justify-center h-full">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     )
@@ -27,77 +28,70 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navigation />
-      
-      <main className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+    <div className="flex-1 bg-background p-8">
+      <main className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-          <p className="mt-2 text-gray-600">Welcome to your secure data room dashboard.</p>
+          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <p className="mt-2 text-muted-foreground">Welcome to your secure data room dashboard.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* File Upload Card */}
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-card rounded-lg border p-6">
             <div className="flex items-center mb-4">
-              <svg className="w-8 h-8 text-blue-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-              </svg>
-              <h2 className="text-xl font-semibold text-gray-900">Upload Files</h2>
+              <Upload className="w-8 h-8 text-primary mr-3" />
+              <h2 className="text-xl font-semibold">Upload Files</h2>
             </div>
-            <p className="text-gray-600 mb-4">Securely upload and manage your documents.</p>
-            <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition-colors">
+            <p className="text-muted-foreground mb-4">Securely upload and manage your documents.</p>
+            <Button className="w-full">
+              <Upload className="w-4 h-4 mr-2" />
               Upload Document
-            </button>
-          </div>
-
-          {/* Recent Activity Card */}
-          <div className="bg-white rounded-lg shadow-md p-6">
+            </Button>
+          </div>          {/* Recent Activity Card */}
+          <div className="bg-card rounded-lg border p-6">
             <div className="flex items-center mb-4">
-              <svg className="w-8 h-8 text-green-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <h2 className="text-xl font-semibold text-gray-900">Recent Activity</h2>
+              <Activity className="w-8 h-8 text-green-600 mr-3" />
+              <h2 className="text-xl font-semibold">Recent Activity</h2>
             </div>
-            <p className="text-gray-600 mb-4">View recent access and modifications.</p>
-            <button className="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md transition-colors">
+            <p className="text-muted-foreground mb-4">View recent access and modifications.</p>
+            <Button variant="secondary" className="w-full">
+              <Activity className="w-4 h-4 mr-2" />
               View Activity Log
-            </button>
+            </Button>
           </div>
 
           {/* Access Control Card */}
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-card rounded-lg border p-6">
             <div className="flex items-center mb-4">
-              <svg className="w-8 h-8 text-purple-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-              <h2 className="text-xl font-semibold text-gray-900">Access Control</h2>
+              <Shield className="w-8 h-8 text-purple-600 mr-3" />
+              <h2 className="text-xl font-semibold">Access Control</h2>
             </div>
-            <p className="text-gray-600 mb-4">Manage user permissions and access rights.</p>
-            <button className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-md transition-colors">
+            <p className="text-muted-foreground mb-4">Manage user permissions and access rights.</p>
+            <Button variant="outline" className="w-full">
+              <Shield className="w-4 h-4 mr-2" />
               Manage Access
-            </button>
+            </Button>
           </div>
         </div>
 
         {/* User Info Section */}
-        <div className="mt-8 bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Session Information</h3>
+        <div className="mt-8 bg-card rounded-lg border p-6">
+          <h3 className="text-lg font-semibold mb-4">Session Information</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
-              <span className="font-medium text-gray-700">Name:</span>
-              <span className="ml-2 text-gray-600">{session.user?.name}</span>
+              <span className="font-medium">Name:</span>
+              <span className="ml-2 text-muted-foreground">{session.user?.name}</span>
             </div>
             <div>
-              <span className="font-medium text-gray-700">Email:</span>
-              <span className="ml-2 text-gray-600">{session.user?.email}</span>
+              <span className="font-medium">Email:</span>
+              <span className="ml-2 text-muted-foreground">{session.user?.email}</span>
             </div>
             <div>
-              <span className="font-medium text-gray-700">User ID:</span>
-              <span className="ml-2 text-gray-600">{session.user?.id}</span>
+              <span className="font-medium">User ID:</span>
+              <span className="ml-2 text-muted-foreground">{session.user?.id}</span>
             </div>
             <div>
-              <span className="font-medium text-gray-700">Status:</span>
+              <span className="font-medium">Status:</span>
               <span className="ml-2 text-green-600 font-medium">Authenticated</span>
             </div>
           </div>
