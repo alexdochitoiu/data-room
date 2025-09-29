@@ -14,5 +14,5 @@ export default withAuth(
 
 // Specify which routes should be protected
 export const config = {
-  matcher: ["/documents/:path*"],
+  matcher: ["/documents/:path*", "/profile"],
 };

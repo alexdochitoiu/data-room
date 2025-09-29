@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import { Upload, Activity, Shield } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import LoadingSpinner from '@/components/LoadingSpinner'
 
 export default function Dashboard() {
   const { data: session, status } = useSession()
@@ -16,11 +17,7 @@ export default function Dashboard() {
   }, [session, status, router])
 
   if (status === 'loading') {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    )
+    return <LoadingSpinner />
   }
 
   if (!session) {

@@ -2,8 +2,9 @@
 
 import { signIn, getProviders } from 'next-auth/react'
 import { useEffect, useState } from 'react'
-import { Github, Shield } from 'lucide-react'
+import { Github } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import Logo from '@/components/Logo'
 
 interface Provider {
   id: string
@@ -33,12 +34,8 @@ export default function SignIn() {
       {/* Sidebar */}
       <div className="w-96 bg-slate-800 flex flex-col">
         {/* Logo */}
-        <div className="flex items-center px-6 py-6">
-          <Shield className="h-8 w-8 text-blue-400 mr-3" />
-          <div>
-            <h1 className="text-white font-bold text-lg">DataRoom</h1>
-            <p className="text-slate-400 text-xs">Document Management</p>
-          </div>
+        <div className="px-6 py-6">
+          <Logo clickable={false} />
         </div>
 
         {/* Welcome Message */}

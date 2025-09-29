@@ -4,13 +4,12 @@ import { useSession, signOut, signIn } from 'next-auth/react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { 
-  Shield, 
   Home, 
   FileText, 
   LogOut,
-  LogIn,
   User
 } from 'lucide-react'
+import Logo from '@/components/Logo'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
@@ -44,12 +43,8 @@ export default function SidebarLayout({ children }: SidebarLayoutProps) {
       {/* Sidebar */}
       <div className="w-64 bg-slate-800 flex flex-col">
         {/* Logo */}
-        <div className="flex items-center px-6 py-6">
-          <Shield className="h-8 w-8 text-blue-400 mr-3" />
-          <div>
-            <h1 className="text-white font-bold text-lg">DataRoom</h1>
-            <p className="text-slate-400 text-xs">Document Management</p>
-          </div>
+        <div className="px-6 py-6">
+          <Logo />
         </div>
 
         {/* Navigation */}
@@ -143,9 +138,9 @@ export default function SidebarLayout({ children }: SidebarLayoutProps) {
           ) : (
             <Button 
               onClick={() => signIn()}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+              variant="ghost"
+              className="w-full !bg-transparent text-slate-300 hover:!bg-slate-700 hover:text-white border border-slate-600 hover:border-slate-500"
             >
-              <LogIn className="mr-2 h-4 w-4" />
               Sign In
             </Button>
           )}
