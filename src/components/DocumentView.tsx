@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { 
   FolderPlus, 
   Upload, 
@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { NewFolderModal } from './NewFolderModal'
 
 interface DocumentViewProps {
   currentPath?: string
@@ -19,7 +20,12 @@ interface DocumentViewProps {
 interface FolderType {
   id: string
   name: string
-  itemCount: number
+  path: string
+  createdAt: string
+  _count: {
+    children: number
+    files: number
+  }
 }
 
 interface FileType {
@@ -31,10 +37,33 @@ interface FileType {
 
 export default function DocumentView({ currentPath = 'Root' }: DocumentViewProps) {
   const [searchQuery, setSearchQuery] = useState('')
-  
-  // Mock data - in real app this would come from your backend
-  const folders: FolderType[] = []
+  const [isNewFolderModalOpen, setIsNewFolderModalOpen] = useState(false)
+  const [folders, setFolders] = useState<FolderType[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const files: FileType[] = []
+
+  // Load folders
+  useEffect(() => {
+    loadFolders()
+  }, [])
+
+  const loadFolders = async () => {
+    try {
+      const response = await fetch('/api/folders')
+      if (response.ok) {
+        const data = await response.json()
+        setFolders(data)
+      }
+    } catch (error) {
+      console.error('Failed to load folders:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleFolderCreated = (folder: FolderType) => {
+    setFolders(prev => [...prev, folder])
+  }
 
   return (
     <div className="flex-1 flex flex-col bg-white">
@@ -49,7 +78,11 @@ export default function DocumentView({ currentPath = 'Root' }: DocumentViewProps
           </div>
           
           <div className="flex items-center space-x-3">
-            <Button variant="outline" size="sm">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setIsNewFolderModalOpen(true)}
+            >
               <FolderPlus className="h-4 w-4 mr-2" />
               New Folder
             </Button>
@@ -76,7 +109,12 @@ export default function DocumentView({ currentPath = 'Root' }: DocumentViewProps
 
       {/* Content Area */}
       <div className="flex-1 px-6 py-8">
-        {folders.length === 0 && files.length === 0 ? (
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center h-full text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mb-4"></div>
+            <p className="text-gray-500">Loading...</p>
+          </div>
+        ) : folders.length === 0 && files.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center">
             <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6">
               <Folder className="h-12 w-12 text-gray-400" />
@@ -86,7 +124,10 @@ export default function DocumentView({ currentPath = 'Root' }: DocumentViewProps
               Get started by uploading files or creating folders to organize your documents.
             </p>
             <div className="flex space-x-3">
-              <Button variant="outline">
+              <Button 
+                variant="outline"
+                onClick={() => setIsNewFolderModalOpen(true)}
+              >
                 <FolderPlus className="h-4 w-4 mr-2" />
                 New Folder
               </Button>
@@ -107,7 +148,9 @@ export default function DocumentView({ currentPath = 'Root' }: DocumentViewProps
                 <Folder className="h-8 w-8 text-blue-500 mr-4" />
                 <div className="flex-1">
                   <h4 className="font-medium text-gray-900">{folder.name}</h4>
-                  <p className="text-sm text-gray-500">{folder.itemCount} items</p>
+                  <p className="text-sm text-gray-500">
+                    {folder._count.children} folders, {folder._count.files} files
+                  </p>
                 </div>
                 <Button
                   variant="ghost"
@@ -142,6 +185,13 @@ export default function DocumentView({ currentPath = 'Root' }: DocumentViewProps
           </div>
         )}
       </div>
+
+      {/* New Folder Modal */}
+      <NewFolderModal
+        isOpen={isNewFolderModalOpen}
+        onClose={() => setIsNewFolderModalOpen(false)}
+        onFolderCreated={handleFolderCreated}
+      />
     </div>
   )
 }
