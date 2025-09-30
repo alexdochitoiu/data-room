@@ -1,7 +1,7 @@
 interface LoadingSpinnerProps {
-  size?: 'sm' | 'md' | 'lg'
-  className?: string
-  centered?: boolean
+  size?: 'sm' | 'md' | 'lg';
+  className?: string;
+  centered?: boolean;
 }
 
 export default function LoadingSpinner({
@@ -13,19 +13,19 @@ export default function LoadingSpinner({
     sm: 'h-6 w-6',
     md: 'h-12 w-12',
     lg: 'h-16 w-16',
-  }
+  };
 
   const spinner = (
     <div
       className={`animate-spin rounded-full border-b-2 border-blue-600 ${sizeClasses[size]} ${className}`}
     />
-  )
+  );
 
   if (centered) {
     return (
       <div className="flex items-center justify-center h-full">{spinner}</div>
-    )
+    );
   }
 
-  return spinner
+  return spinner;
 }

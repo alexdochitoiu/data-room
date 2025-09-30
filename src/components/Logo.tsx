@@ -1,12 +1,12 @@
-'use client'
+'use client';
 
-import Link from 'next/link'
-import { FolderOpen } from 'lucide-react'
+import Link from 'next/link';
+import { FolderOpen } from 'lucide-react';
 
 interface LogoProps {
-  className?: string
-  showTagline?: boolean
-  clickable?: boolean
+  className?: string;
+  showTagline?: boolean;
+  clickable?: boolean;
 }
 
 export default function Logo({
@@ -24,15 +24,15 @@ export default function Logo({
         )}
       </div>
     </div>
-  )
+  );
 
   if (clickable) {
     return (
       <Link href="/" className="hover:opacity-90 transition-opacity">
         {logoContent}
       </Link>
-    )
+    );
   }
 
-  return logoContent
+  return logoContent;
 }

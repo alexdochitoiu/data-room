@@ -1,7 +1,7 @@
-'use client'
+'use client';
 
-import { useSession, signIn, signOut } from 'next-auth/react'
-import Link from 'next/link'
+import { useSession, signIn, signOut } from 'next-auth/react';
+import Link from 'next/link';
 import {
   Shield,
   LayoutDashboard,
@@ -10,20 +10,20 @@ import {
   User,
   Settings,
   Home,
-} from 'lucide-react'
+} from 'lucide-react';
 
-import { Button } from '@/components/ui/button'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+} from '@/components/ui/dropdown-menu';
 
 export default function Navigation() {
-  const { data: session, status } = useSession()
+  const { data: session, status } = useSession();
 
   return (
     <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -149,5 +149,5 @@ export default function Navigation() {
         </div>
       </div>
     </nav>
-  )
+  );
 }

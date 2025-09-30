@@ -1,12 +1,12 @@
-import { useState, useRef } from 'react'
+import { useState, useRef } from 'react';
 
 interface FileType {
-  id: string
-  name: string
-  size: string
-  modifiedAt: string
+  id: string;
+  name: string;
+  size: string;
+  modifiedAt: string;
 }
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -14,14 +14,14 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Upload, File, X } from 'lucide-react'
+} from '@/components/ui/dialog';
+import { Upload, File, X } from 'lucide-react';
 
 interface FileUploadModalProps {
-  isOpen: boolean
-  onClose: () => void
-  onFileUploaded: (file: FileType) => void
-  folderId?: string
+  isOpen: boolean;
+  onClose: () => void;
+  onFileUploaded: (file: FileType) => void;
+  folderId?: string;
 }
 
 export function FileUploadModal({
@@ -30,107 +30,107 @@ export function FileUploadModal({
   onFileUploaded,
   folderId,
 }: FileUploadModalProps) {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [isUploading, setIsUploading] = useState(false)
-  const [error, setError] = useState('')
-  const [dragActive, setDragActive] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [error, setError] = useState('');
+  const [dragActive, setDragActive] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (file: File) => {
     // Validate file type
     if (file.type !== 'application/pdf') {
-      setError('Only PDF files are allowed')
-      return
+      setError('Only PDF files are allowed');
+      return;
     }
 
     // Validate file size (10MB limit)
     if (file.size > 10 * 1024 * 1024) {
-      setError('File size must be less than 10MB')
-      return
+      setError('File size must be less than 10MB');
+      return;
     }
 
-    setSelectedFile(file)
-    setError('')
-  }
+    setSelectedFile(file);
+    setError('');
+  };
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+    const file = e.target.files?.[0];
     if (file) {
-      handleFileSelect(file)
+      handleFileSelect(file);
     }
-  }
+  };
 
   const handleDrag = (e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
+    e.preventDefault();
+    e.stopPropagation();
     if (e.type === 'dragenter' || e.type === 'dragover') {
-      setDragActive(true)
+      setDragActive(true);
     } else if (e.type === 'dragleave') {
-      setDragActive(false)
+      setDragActive(false);
     }
-  }
+  };
 
   const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setDragActive(false)
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
 
-    const file = e.dataTransfer.files?.[0]
+    const file = e.dataTransfer.files?.[0];
     if (file) {
-      handleFileSelect(file)
+      handleFileSelect(file);
     }
-  }
+  };
 
   const handleUpload = async () => {
     if (!selectedFile) {
-      setError('Please select a file')
-      return
+      setError('Please select a file');
+      return;
     }
 
-    setIsUploading(true)
-    setError('')
+    setIsUploading(true);
+    setError('');
 
     try {
-      const formData = new FormData()
-      formData.append('file', selectedFile)
+      const formData = new FormData();
+      formData.append('file', selectedFile);
       if (folderId) {
-        formData.append('folderId', folderId)
+        formData.append('folderId', folderId);
       }
 
       const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
-      })
+      });
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to upload file')
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to upload file');
       }
 
-      const uploadedFile = await response.json()
-      onFileUploaded(uploadedFile)
-      handleClose()
+      const uploadedFile = await response.json();
+      onFileUploaded(uploadedFile);
+      handleClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to upload file')
+      setError(err instanceof Error ? err.message : 'Failed to upload file');
     } finally {
-      setIsUploading(false)
+      setIsUploading(false);
     }
-  }
+  };
 
   const handleClose = () => {
-    setSelectedFile(null)
-    setError('')
-    setIsUploading(false)
-    onClose()
-  }
+    setSelectedFile(null);
+    setError('');
+    setIsUploading(false);
+    onClose();
+  };
 
   const removeSelectedFile = () => {
-    setSelectedFile(null)
-    setError('')
+    setSelectedFile(null);
+    setError('');
     if (fileInputRef.current) {
-      fileInputRef.current.value = ''
+      fileInputRef.current.value = '';
     }
-  }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -183,8 +183,8 @@ export function FileUploadModal({
                   variant="ghost"
                   size="sm"
                   onClick={e => {
-                    e.stopPropagation()
-                    removeSelectedFile()
+                    e.stopPropagation();
+                    removeSelectedFile();
                   }}
                   disabled={isUploading}
                 >
@@ -228,5 +228,5 @@ export function FileUploadModal({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

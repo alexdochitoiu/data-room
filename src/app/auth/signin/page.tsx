@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { signIn, getProviders } from "next-auth/react";
-import { useEffect, useState } from "react";
-import { Github } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import Logo from "@/components/Logo";
+import { signIn, getProviders } from 'next-auth/react';
+import { useEffect, useState } from 'react';
+import { Github } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import Logo from '@/components/Logo';
 
 interface Provider {
   id: string;
@@ -79,22 +79,22 @@ export default function SignIn() {
 
           <div className="space-y-3">
             {providers &&
-              Object.values(providers).map((provider) => (
+              Object.values(providers).map(provider => (
                 <Button
                   key={provider.name}
-                  onClick={() => signIn(provider.id, { callbackUrl: "/" })}
+                  onClick={() => signIn(provider.id, { callbackUrl: '/' })}
                   variant="outline"
                   size="lg"
                   className={`w-full h-12 border-2 transition-all duration-200 ${
-                    provider.id === "google"
-                      ? "border-gray-300 hover:border-red-500 hover:bg-red-50 text-gray-700 hover:text-red-600"
-                      : provider.id === "github"
-                      ? "border-gray-300 hover:border-gray-700 hover:bg-gray-50 text-gray-700 hover:text-gray-900"
-                      : "border-gray-300 hover:border-blue-500 hover:bg-blue-50 text-gray-700 hover:text-blue-600"
+                    provider.id === 'google'
+                      ? 'border-gray-300 hover:border-red-500 hover:bg-red-50 text-gray-700 hover:text-red-600'
+                      : provider.id === 'github'
+                        ? 'border-gray-300 hover:border-gray-700 hover:bg-gray-50 text-gray-700 hover:text-gray-900'
+                        : 'border-gray-300 hover:border-blue-500 hover:bg-blue-50 text-gray-700 hover:text-blue-600'
                   }`}
                 >
                   <div className="flex items-center justify-center space-x-3 w-full">
-                    {provider.id === "google" && (
+                    {provider.id === 'google' && (
                       <svg className="h-5 w-5" viewBox="0 0 24 24">
                         <path
                           fill="#4285F4"
@@ -114,7 +114,7 @@ export default function SignIn() {
                         />
                       </svg>
                     )}
-                    {provider.id === "github" && (
+                    {provider.id === 'github' && (
                       <Github className="h-5 w-5 text-gray-800" />
                     )}
                     <span className="font-medium">

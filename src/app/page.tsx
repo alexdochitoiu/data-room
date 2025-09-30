@@ -1,16 +1,16 @@
-'use client'
+'use client';
 
-import { useSession } from 'next-auth/react'
-import DocumentView from '@/components/DocumentView'
-import LoadingSpinner from '@/components/LoadingSpinner'
-import { FolderOpen } from 'lucide-react'
-import Link from 'next/link'
+import { useSession } from 'next-auth/react';
+import DocumentView from '@/components/DocumentView';
+import LoadingSpinner from '@/components/LoadingSpinner';
+import { FolderOpen } from 'lucide-react';
+import Link from 'next/link';
 
 export default function Home() {
-  const { data: session, status } = useSession()
+  const { data: session, status } = useSession();
 
   if (status === 'loading') {
-    return <LoadingSpinner />
+    return <LoadingSpinner />;
   }
 
   if (!session) {
@@ -30,8 +30,8 @@ export default function Home() {
           </p>
         </div>
       </div>
-    )
+    );
   }
 
-  return <DocumentView />
+  return <DocumentView />;
 }

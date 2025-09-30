@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '../auth/[...nextauth]/route'
-import { prisma } from '@/lib/prisma'
-import { z } from 'zod'
+import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '../auth/[...nextauth]/route';
+import { prisma } from '@/lib/prisma';
+import { z } from 'zod';
 
 // Validation schemas
 const createFolderSchema = z.object({
@@ -11,7 +11,7 @@ const createFolderSchema = z.object({
     .min(1, 'Folder name is required')
     .max(255, 'Folder name too long'),
   parentId: z.string().optional(),
-})
+});
 
 const renameFolderSchema = z.object({
   id: z.string(),
@@ -19,18 +19,18 @@ const renameFolderSchema = z.object({
     .string()
     .min(1, 'Folder name is required')
     .max(255, 'Folder name too long'),
-})
+});
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { searchParams } = new URL(request.url)
-    const parentId = searchParams.get('parentId')
+    const { searchParams } = new URL(request.url);
+    const parentId = searchParams.get('parentId');
 
     const folders = await prisma.folder.findMany({
       where: {
@@ -43,33 +43,33 @@ export async function GET(request: NextRequest) {
           select: { children: true, files: true },
         },
       },
-    })
+    });
 
-    return NextResponse.json(folders)
+    return NextResponse.json(folders);
   } catch (error) {
-    console.error('Error fetching folders:', error)
+    console.error('Error fetching folders:', error);
     return NextResponse.json(
       { error: 'Failed to fetch folders' },
       { status: 500 }
-    )
+    );
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json()
-    const { name, parentId } = createFolderSchema.parse(body)
+    const body = await request.json();
+    const { name, parentId } = createFolderSchema.parse(body);
 
     // Get or create user
     let user = await prisma.user.findUnique({
       where: { email: session.user.email },
-    })
+    });
 
     if (!user) {
       user = await prisma.user.create({
@@ -78,17 +78,17 @@ export async function POST(request: NextRequest) {
           name: session.user.name,
           image: session.user.image,
         },
-      })
+      });
     }
 
     // Build path
-    let path = '/'
+    let path = '/';
     if (parentId) {
       const parentFolder = await prisma.folder.findFirst({
         where: { id: parentId, userId: user.id },
-      })
+      });
       if (parentFolder) {
-        path = `${parentFolder.path}${parentFolder.name}/`
+        path = `${parentFolder.path}${parentFolder.name}/`;
       }
     }
 
@@ -104,49 +104,49 @@ export async function POST(request: NextRequest) {
           select: { children: true, files: true },
         },
       },
-    })
+    });
 
-    return NextResponse.json(folder, { status: 201 })
+    return NextResponse.json(folder, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.issues }, { status: 400 })
+      return NextResponse.json({ error: error.issues }, { status: 400 });
     }
 
-    console.error('Error creating folder:', error)
+    console.error('Error creating folder:', error);
     return NextResponse.json(
       { error: 'Failed to create folder' },
       { status: 500 }
-    )
+    );
   }
 }
 
 export async function PUT(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json()
-    const { id, name } = renameFolderSchema.parse(body)
+    const body = await request.json();
+    const { id, name } = renameFolderSchema.parse(body);
 
     // Get user
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-    })
+    });
 
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     // Check if folder exists and belongs to user
     const existingFolder = await prisma.folder.findFirst({
       where: { id, userId: user.id },
-    })
+    });
 
     if (!existingFolder) {
-      return NextResponse.json({ error: 'Folder not found' }, { status: 404 })
+      return NextResponse.json({ error: 'Folder not found' }, { status: 404 });
     }
 
     // Check for duplicate names in the same directory
@@ -157,13 +157,13 @@ export async function PUT(request: NextRequest) {
         userId: user.id,
         id: { not: id }, // Exclude current folder
       },
-    })
+    });
 
     if (duplicateFolder) {
       return NextResponse.json(
         { error: 'A folder with this name already exists in this location' },
         { status: 409 }
-      )
+      );
     }
 
     // Update folder name
@@ -175,18 +175,18 @@ export async function PUT(request: NextRequest) {
           select: { children: true, files: true },
         },
       },
-    })
+    });
 
-    return NextResponse.json(updatedFolder)
+    return NextResponse.json(updatedFolder);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.issues }, { status: 400 })
+      return NextResponse.json({ error: error.issues }, { status: 400 });
     }
 
-    console.error('Error renaming folder:', error)
+    console.error('Error renaming folder:', error);
     return NextResponse.json(
       { error: 'Failed to rename folder' },
       { status: 500 }
-    )
+    );
   }
 }

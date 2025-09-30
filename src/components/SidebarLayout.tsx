@@ -1,36 +1,36 @@
-'use client'
+'use client';
 
-import { useSession, signOut, signIn } from 'next-auth/react'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { Home, FileText, LogOut, User } from 'lucide-react'
-import Logo from '@/components/Logo'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
+import { useSession, signOut, signIn } from 'next-auth/react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { Home, FileText, LogOut, User } from 'lucide-react';
+import Logo from '@/components/Logo';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+} from '@/components/ui/dropdown-menu';
 
 const navigation = [
   { name: 'Home', href: '/', icon: Home },
   { name: 'Documents', href: '/documents', icon: FileText },
-]
+];
 
 interface SidebarLayoutProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 export default function SidebarLayout({ children }: SidebarLayoutProps) {
-  const { data: session } = useSession()
-  const pathname = usePathname()
+  const { data: session } = useSession();
+  const pathname = usePathname();
 
   // Don't show sidebar for auth pages
   if (pathname?.startsWith('/auth')) {
-    return <>{children}</>
+    return <>{children}</>;
   }
 
   return (
@@ -45,8 +45,8 @@ export default function SidebarLayout({ children }: SidebarLayoutProps) {
         {/* Navigation */}
         <nav className="flex-1 px-4 space-y-1">
           {navigation.map(item => {
-            const isActive = pathname === item.href
-            const isDisabled = !session && item.name === 'Documents'
+            const isActive = pathname === item.href;
+            const isDisabled = !session && item.name === 'Documents';
 
             if (isDisabled) {
               return (
@@ -57,7 +57,7 @@ export default function SidebarLayout({ children }: SidebarLayoutProps) {
                   <item.icon className="mr-3 h-5 w-5" />
                   {item.name}
                 </div>
-              )
+              );
             }
 
             return (
@@ -73,7 +73,7 @@ export default function SidebarLayout({ children }: SidebarLayoutProps) {
                 <item.icon className="mr-3 h-5 w-5" />
                 {item.name}
               </Link>
-            )
+            );
           })}
         </nav>
 
@@ -148,5 +148,5 @@ export default function SidebarLayout({ children }: SidebarLayoutProps) {
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">{children}</div>
     </div>
-  )
+  );
 }

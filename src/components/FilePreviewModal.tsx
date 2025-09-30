@@ -1,23 +1,23 @@
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Download, ExternalLink, X } from 'lucide-react'
+} from '@/components/ui/dialog';
+import { Download, ExternalLink, X } from 'lucide-react';
 
 interface FilePreviewModalProps {
-  isOpen: boolean
-  onClose: () => void
+  isOpen: boolean;
+  onClose: () => void;
   file: {
-    id: string
-    name: string
-    size: string
-    modifiedAt: string
-  } | null
+    id: string;
+    name: string;
+    size: string;
+    modifiedAt: string;
+  } | null;
 }
 
 export function FilePreviewModal({
@@ -25,33 +25,33 @@ export function FilePreviewModal({
   onClose,
   file,
 }: FilePreviewModalProps) {
-  const [isLoading, setIsLoading] = useState(true)
-  const [hasError, setHasError] = useState(false)
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
 
-  if (!file) return null
+  if (!file) return null;
 
-  const fileUrl = `/api/files/${file.id}`
+  const fileUrl = `/api/files/${file.id}`;
 
   const handleDownload = () => {
-    const link = document.createElement('a')
-    link.href = fileUrl
-    link.download = file.name
-    link.click()
-  }
+    const link = document.createElement('a');
+    link.href = fileUrl;
+    link.download = file.name;
+    link.click();
+  };
 
   const handleOpenInNewTab = () => {
-    window.open(fileUrl, '_blank')
-  }
+    window.open(fileUrl, '_blank');
+  };
 
   const handleIframeLoad = () => {
-    setIsLoading(false)
-    setHasError(false)
-  }
+    setIsLoading(false);
+    setHasError(false);
+  };
 
   const handleIframeError = () => {
-    setIsLoading(false)
-    setHasError(true)
-  }
+    setIsLoading(false);
+    setHasError(true);
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -136,5 +136,5 @@ export function FilePreviewModal({
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

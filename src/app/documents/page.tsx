@@ -1,7 +1,7 @@
-'use client'
+'use client';
 
-import DocumentView from '@/components/DocumentView'
+import DocumentView from '@/components/DocumentView';
 
 export default function DocumentsPage() {
-  return <DocumentView title="Documents" showOnlyFiles={true} />
+  return <DocumentView title="Documents" showOnlyFiles={true} />;
 }

@@ -1,18 +1,18 @@
-import { useState } from 'react'
+import { useState } from 'react';
 
 interface FolderType {
-  id: string
-  name: string
-  path: string
-  parentId?: string | null
-  createdAt: string
+  id: string;
+  name: string;
+  path: string;
+  parentId?: string | null;
+  createdAt: string;
   _count: {
-    children: number
-    files: number
-  }
+    children: number;
+    files: number;
+  };
 }
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Dialog,
   DialogContent,
@@ -20,13 +20,13 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
+} from '@/components/ui/dialog';
 
 interface NewFolderModalProps {
-  isOpen: boolean
-  onClose: () => void
-  onFolderCreated: (folder: FolderType) => void
-  parentId?: string
+  isOpen: boolean;
+  onClose: () => void;
+  onFolderCreated: (folder: FolderType) => void;
+  parentId?: string;
 }
 
 export function NewFolderModal({
@@ -35,20 +35,20 @@ export function NewFolderModal({
   onFolderCreated,
   parentId,
 }: NewFolderModalProps) {
-  const [folderName, setFolderName] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [folderName, setFolderName] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!folderName.trim()) {
-      setError('Folder name is required')
-      return
+      setError('Folder name is required');
+      return;
     }
 
-    setIsLoading(true)
-    setError('')
+    setIsLoading(true);
+    setError('');
 
     try {
       const response = await fetch('/api/folders', {
@@ -60,29 +60,29 @@ export function NewFolderModal({
           name: folderName.trim(),
           parentId,
         }),
-      })
+      });
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to create folder')
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create folder');
       }
 
-      const folder = await response.json()
-      onFolderCreated(folder)
-      setFolderName('')
-      onClose()
+      const folder = await response.json();
+      onFolderCreated(folder);
+      setFolderName('');
+      onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create folder')
+      setError(err instanceof Error ? err.message : 'Failed to create folder');
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleClose = () => {
-    setFolderName('')
-    setError('')
-    onClose()
-  }
+    setFolderName('');
+    setError('');
+    onClose();
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -128,5 +128,5 @@ export function NewFolderModal({
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

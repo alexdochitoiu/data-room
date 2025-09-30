@@ -1,27 +1,27 @@
-'use client'
+'use client';
 
-import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
-import { Upload, Activity, Shield } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import LoadingSpinner from '@/components/LoadingSpinner'
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import { Upload, Activity, Shield } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 export default function Dashboard() {
-  const { data: session, status } = useSession()
-  const router = useRouter()
+  const { data: session, status } = useSession();
+  const router = useRouter();
 
   useEffect(() => {
-    if (status === 'loading') return // Still loading
-    if (!session) router.push('/auth/signin') // Not authenticated
-  }, [session, status, router])
+    if (status === 'loading') return; // Still loading
+    if (!session) router.push('/auth/signin'); // Not authenticated
+  }, [session, status, router]);
 
   if (status === 'loading') {
-    return <LoadingSpinner />
+    return <LoadingSpinner />;
   }
 
   if (!session) {
-    return null // Will redirect to sign in
+    return null; // Will redirect to sign in
   }
 
   return (
@@ -111,5 +111,5 @@ export default function Dashboard() {
         </div>
       </main>
     </div>
-  )
+  );
 }

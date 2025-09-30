@@ -1,26 +1,26 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react';
 
 interface FolderType {
-  id: string
-  name: string
-  path: string
-  parentId?: string | null
-  createdAt: string
+  id: string;
+  name: string;
+  path: string;
+  parentId?: string | null;
+  createdAt: string;
   _count: {
-    children: number
-    files: number
-  }
+    children: number;
+    files: number;
+  };
 }
 
 interface FileType {
-  id: string
-  name: string
-  size: string
-  modifiedAt: string
+  id: string;
+  name: string;
+  size: string;
+  modifiedAt: string;
 }
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Dialog,
   DialogContent,
@@ -28,17 +28,17 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
+} from '@/components/ui/dialog';
 
 interface RenameModalProps {
-  isOpen: boolean
-  onClose: () => void
-  onRenamed: (item: FolderType | FileType) => void
+  isOpen: boolean;
+  onClose: () => void;
+  onRenamed: (item: FolderType | FileType) => void;
   item: {
-    id: string
-    name: string
-    type: 'folder' | 'file'
-  } | null
+    id: string;
+    name: string;
+    type: 'folder' | 'file';
+  } | null;
 }
 
 export function RenameModal({
@@ -47,45 +47,45 @@ export function RenameModal({
   onRenamed,
   item,
 }: RenameModalProps) {
-  const [newName, setNewName] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState('')
-  const inputRef = useRef<HTMLInputElement>(null)
+  const [newName, setNewName] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Set initial name when item changes
   useEffect(() => {
     if (item) {
-      setNewName(item.name)
+      setNewName(item.name);
     }
-  }, [item])
+  }, [item]);
 
   // Select text when modal opens
   useEffect(() => {
     if (isOpen && inputRef.current) {
       setTimeout(() => {
-        inputRef.current?.select()
-      }, 100)
+        inputRef.current?.select();
+      }, 100);
     }
-  }, [isOpen])
+  }, [isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!item || !newName.trim()) {
-      setError('Name is required')
-      return
+      setError('Name is required');
+      return;
     }
 
     if (newName.trim() === item.name) {
-      handleClose()
-      return
+      handleClose();
+      return;
     }
 
-    setIsLoading(true)
-    setError('')
+    setIsLoading(true);
+    setError('');
 
     try {
-      const endpoint = item.type === 'folder' ? '/api/folders' : '/api/files'
+      const endpoint = item.type === 'folder' ? '/api/folders' : '/api/files';
       const response = await fetch(endpoint, {
         method: 'PUT',
         headers: {
@@ -95,33 +95,33 @@ export function RenameModal({
           id: item.id,
           name: newName.trim(),
         }),
-      })
+      });
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || `Failed to rename ${item.type}`)
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Failed to rename ${item.type}`);
       }
 
-      const renamedItem = await response.json()
-      onRenamed(renamedItem)
-      handleClose()
+      const renamedItem = await response.json();
+      onRenamed(renamedItem);
+      handleClose();
     } catch (err) {
       setError(
         err instanceof Error ? err.message : `Failed to rename ${item?.type}`
-      )
+      );
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleClose = () => {
-    setNewName('')
-    setError('')
-    setIsLoading(false)
-    onClose()
-  }
+    setNewName('');
+    setError('');
+    setIsLoading(false);
+    onClose();
+  };
 
-  if (!item) return null
+  if (!item) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -173,5 +173,5 @@ export function RenameModal({
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

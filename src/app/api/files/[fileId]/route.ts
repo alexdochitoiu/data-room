@@ -1,21 +1,21 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '../../auth/[...nextauth]/route'
-import { prisma } from '@/lib/prisma'
-import fs from 'fs-extra'
+import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '../../auth/[...nextauth]/route';
+import { prisma } from '@/lib/prisma';
+import fs from 'fs-extra';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { fileId: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const fileId = params.fileId
+    const fileId = params.fileId;
 
     // Get file from database and verify ownership
     const file = await prisma.file.findFirst({
@@ -23,10 +23,10 @@ export async function GET(
         id: fileId,
         user: { email: session.user.email },
       },
-    })
+    });
 
     if (!file) {
-      return NextResponse.json({ error: 'File not found' }, { status: 404 })
+      return NextResponse.json({ error: 'File not found' }, { status: 404 });
     }
 
     // Check if file exists on disk
@@ -34,11 +34,11 @@ export async function GET(
       return NextResponse.json(
         { error: 'File not found on disk' },
         { status: 404 }
-      )
+      );
     }
 
     // Read and serve the file
-    const fileBuffer = await fs.readFile(file.path)
+    const fileBuffer = await fs.readFile(file.path);
 
     return new NextResponse(fileBuffer, {
       headers: {
@@ -47,9 +47,12 @@ export async function GET(
         'Content-Disposition': `inline; filename="${file.originalName}"`,
         'Cache-Control': 'private, max-age=3600',
       },
-    })
+    });
   } catch (error) {
-    console.error('Error serving file:', error)
-    return NextResponse.json({ error: 'Failed to serve file' }, { status: 500 })
+    console.error('Error serving file:', error);
+    return NextResponse.json(
+      { error: 'Failed to serve file' },
+      { status: 500 }
+    );
   }
 }
