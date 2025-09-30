@@ -2,26 +2,12 @@
 
 import { useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import {
-  FolderPlus,
-  Upload,
-  Folder,
-  FileText,
-  MoreHorizontal,
-  Search,
-  Edit,
-  Trash2,
-} from 'lucide-react';
+import { FolderPlus, Upload, Folder, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Breadcrumbs } from './Breadcrumbs';
 import { Modals } from './Modals';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { ItemActionsDropdown } from './ItemActionsDropdown';
+import { SearchBar } from './SearchBar';
 import { FileType, FolderType } from '@/types/types';
 import { useDocumentViewStore } from '@/stores/documentViewStore';
 
@@ -48,7 +34,6 @@ export default function DocumentView({
 
     // Actions
     setCurrentFolderId,
-    setSearchQuery,
     loadFolders,
     loadFiles,
 
@@ -79,20 +64,16 @@ export default function DocumentView({
     openFilePreviewModal(file);
   };
 
-  const handleRenameFolder = (folder: FolderType) => {
-    openRenameModal({ id: folder.id, name: folder.name, type: 'folder' });
+  const handleRename = (item: FolderType | FileType) => {
+    // Determine type based on the item structure
+    const itemType = 'size' in item ? 'file' : 'folder';
+    openRenameModal({ id: item.id, name: item.name, type: itemType });
   };
 
-  const handleRenameFile = (file: FileType) => {
-    openRenameModal({ id: file.id, name: file.name, type: 'file' });
-  };
-
-  const handleDeleteFolder = (folder: FolderType) => {
-    openDeleteModal({ id: folder.id, name: folder.name, type: 'folder' });
-  };
-
-  const handleDeleteFile = (file: FileType) => {
-    openDeleteModal({ id: file.id, name: file.name, type: 'file' });
+  const handleDelete = (item: FolderType | FileType) => {
+    // Determine type based on the item structure
+    const itemType = 'size' in item ? 'file' : 'folder';
+    openDeleteModal({ id: item.id, name: item.name, type: itemType });
   };
 
   const handleFolderClick = (folderId: string) => {
@@ -142,19 +123,7 @@ export default function DocumentView({
       </div>
 
       {/* Search Bar */}
-      <div className="px-6 py-4 border-b border-gray-100">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder="Search files and folders..."
-            value={searchQuery}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setSearchQuery(e.target.value)
-            }
-            className="pl-10"
-          />
-        </div>
-      </div>
+      <SearchBar className="px-6 py-4 border-b border-gray-100" />
 
       {/* Content Area */}
       <div className="flex-1 px-6 py-8">
@@ -209,39 +178,11 @@ export default function DocumentView({
                     files
                   </p>
                 </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="opacity-0 group-hover:opacity-100"
-                      onClick={e => e.stopPropagation()}
-                    >
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuItem
-                      onClick={e => {
-                        e.stopPropagation();
-                        handleRenameFolder(folder);
-                      }}
-                    >
-                      <Edit className="h-4 w-4 mr-2" />
-                      Rename
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={e => {
-                        e.stopPropagation();
-                        handleDeleteFolder(folder);
-                      }}
-                      className="text-red-600"
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <ItemActionsDropdown
+                  item={folder}
+                  onRename={handleRename}
+                  onDelete={handleDelete}
+                />
               </div>
             ))}
 
@@ -259,39 +200,11 @@ export default function DocumentView({
                     {file.size} • {file.modifiedAt}
                   </p>
                 </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="opacity-0 group-hover:opacity-100"
-                      onClick={e => e.stopPropagation()}
-                    >
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuItem
-                      onClick={e => {
-                        e.stopPropagation();
-                        handleRenameFile(file);
-                      }}
-                    >
-                      <Edit className="h-4 w-4 mr-2" />
-                      Rename
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={e => {
-                        e.stopPropagation();
-                        handleDeleteFile(file);
-                      }}
-                      className="text-red-600"
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <ItemActionsDropdown
+                  item={file}
+                  onRename={handleRename}
+                  onDelete={handleDelete}
+                />
               </div>
             ))}
           </div>
