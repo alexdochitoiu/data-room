@@ -2,7 +2,6 @@ import { create } from 'zustand';
 import { BreadcrumbData, FileType, FolderType } from '@/types/types';
 
 interface DocumentViewState {
-  // Data state
   folders: FolderType[];
   files: FileType[];
   breadcrumbs: BreadcrumbData[];
@@ -10,7 +9,6 @@ interface DocumentViewState {
   searchQuery: string;
   isLoading: boolean;
 
-  // Modal states
   isNewFolderModalOpen: boolean;
   isFileUploadModalOpen: boolean;
   isFilePreviewModalOpen: boolean;
@@ -18,7 +16,6 @@ interface DocumentViewState {
   isDeleteModalOpen: boolean;
   isFileConflictModalOpen: boolean;
 
-  // Selected items
   selectedFile: FileType | null;
   itemToRename: {
     id: string;
@@ -36,7 +33,6 @@ interface DocumentViewState {
     folderId?: string;
   } | null;
 
-  // Actions
   setFolders: (folders: FolderType[]) => void;
   addFolder: (folder: FolderType) => void;
   updateFolder: (id: string, updates: Partial<FolderType>) => void;
@@ -52,7 +48,6 @@ interface DocumentViewState {
   setSearchQuery: (query: string) => void;
   setIsLoading: (loading: boolean) => void;
 
-  // Modal actions
   openNewFolderModal: () => void;
   closeNewFolderModal: () => void;
   openFileUploadModal: () => void;
@@ -78,7 +73,6 @@ interface DocumentViewState {
   }) => void;
   closeFileConflictModal: () => void;
 
-  // API actions
   loadFolders: (parentId?: string | null) => Promise<void>;
   loadFiles: (folderId?: string | null) => Promise<void>;
   loadAllFiles: () => Promise<void>;
@@ -87,7 +81,6 @@ interface DocumentViewState {
 }
 
 export const useDocumentViewStore = create<DocumentViewState>((set, get) => ({
-  // Initial state
   folders: [],
   files: [],
   breadcrumbs: [],
@@ -105,7 +98,6 @@ export const useDocumentViewStore = create<DocumentViewState>((set, get) => ({
   itemToDelete: null,
   conflictingFile: null,
 
-  // Data actions
   setFolders: folders => set({ folders }),
   addFolder: folder => set(state => ({ folders: [...state.folders, folder] })),
   updateFolder: (id, updates) =>
@@ -137,7 +129,6 @@ export const useDocumentViewStore = create<DocumentViewState>((set, get) => ({
   setSearchQuery: query => set({ searchQuery: query }),
   setIsLoading: loading => set({ isLoading: loading }),
 
-  // Modal actions
   openNewFolderModal: () => set({ isNewFolderModalOpen: true }),
   closeNewFolderModal: () => set({ isNewFolderModalOpen: false }),
   openFileUploadModal: () => set({ isFileUploadModalOpen: true }),
@@ -183,7 +174,6 @@ export const useDocumentViewStore = create<DocumentViewState>((set, get) => ({
       conflictingFile: null,
     }),
 
-  // API actions
   loadFolders: async (parentId = null) => {
     set({ isLoading: true });
     try {
@@ -268,7 +258,6 @@ export const useDocumentViewStore = create<DocumentViewState>((set, get) => ({
       throw new Error(`Failed to delete ${type}`);
     }
 
-    // Optimistic update
     if (type === 'folder') {
       get().removeFolder(id);
     } else {

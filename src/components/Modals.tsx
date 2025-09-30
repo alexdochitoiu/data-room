@@ -11,7 +11,6 @@ import { useDocumentViewStore } from '@/stores/documentViewStore';
 
 export function Modals() {
   const {
-    // Modal state
     isNewFolderModalOpen,
     isFileUploadModalOpen,
     isFilePreviewModalOpen,
@@ -24,7 +23,6 @@ export function Modals() {
     conflictingFile,
     currentFolderId,
 
-    // Modal actions
     closeNewFolderModal,
     closeFileUploadModal,
     closeFilePreviewModal,
@@ -32,7 +30,6 @@ export function Modals() {
     closeDeleteModal,
     closeFileConflictModal,
 
-    // Store methods for handling events
     addFolder,
     addFile,
     updateFolder,
@@ -40,7 +37,6 @@ export function Modals() {
     deleteItem,
   } = useDocumentViewStore();
 
-  // Event handlers using store methods directly
   const handleFolderCreated = (folder: FolderType) => {
     addFolder(folder);
   };
@@ -68,7 +64,7 @@ export function Modals() {
     if (!conflictingFile) return;
 
     if (resolution === 'cancel') {
-      return; // Just close the modal, no upload
+      return;
     }
 
     try {
@@ -99,7 +95,6 @@ export function Modals() {
 
   return (
     <>
-      {/* New Folder Modal */}
       <NewFolderModal
         isOpen={isNewFolderModalOpen}
         onClose={closeNewFolderModal}
@@ -107,7 +102,6 @@ export function Modals() {
         parentId={currentFolderId || undefined}
       />
 
-      {/* File Upload Modal */}
       <FileUploadModal
         isOpen={isFileUploadModalOpen}
         onClose={closeFileUploadModal}
@@ -115,14 +109,12 @@ export function Modals() {
         folderId={currentFolderId || undefined}
       />
 
-      {/* File Preview Modal */}
       <FilePreviewModal
         isOpen={isFilePreviewModalOpen}
         onClose={closeFilePreviewModal}
         file={selectedFile}
       />
 
-      {/* Rename Modal */}
       <RenameModal
         isOpen={isRenameModalOpen}
         onClose={closeRenameModal}
@@ -130,7 +122,6 @@ export function Modals() {
         item={itemToRename}
       />
 
-      {/* Delete Confirmation Modal */}
       <DeleteConfirmationModal
         isOpen={isDeleteModalOpen}
         onClose={closeDeleteModal}
@@ -141,7 +132,6 @@ export function Modals() {
         itemType={itemToDelete?.type || 'file'}
       />
 
-      {/* File Conflict Modal */}
       <FileConflictModal
         isOpen={isFileConflictModalOpen}
         fileName={conflictingFile?.fileName || ''}

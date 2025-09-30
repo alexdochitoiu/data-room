@@ -88,7 +88,6 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const { id, name } = renameFileSchema.parse(body);
 
-    // Get user
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
     });
@@ -106,7 +105,6 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'File not found' }, { status: 404 });
     }
 
-    // Check for duplicate names in the same directory
     const duplicateFile = await prisma.file.findFirst({
       where: {
         name,
@@ -123,7 +121,6 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // Update file name
     const updatedFile = await prisma.file.update({
       where: { id },
       data: { name, originalName: name },
@@ -159,7 +156,6 @@ export async function DELETE(request: NextRequest) {
     const body = await request.json();
     const { id } = deleteFileSchema.parse(body);
 
-    // Get user
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
     });
@@ -177,17 +173,23 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'File not found' }, { status: 404 });
     }
 
-    // Delete file from filesystem
+    // Delete from storage (cloud or local)
     try {
-      if (await fs.pathExists(existingFile.path)) {
+      if (existingFile.path.includes('vercel-storage.com')) {
+        // Delete from Vercel Blob storage
+        const { del } = await import('@vercel/blob');
+        await del(existingFile.path, {
+          token: process.env.BLOB_READ_WRITE_TOKEN,
+        });
+      } else if (await fs.pathExists(existingFile.path)) {
+        // Delete from local filesystem
         await fs.unlink(existingFile.path);
       }
-    } catch (fsError) {
-      console.error('Error deleting file from filesystem:', fsError);
-      // Continue with database deletion even if filesystem deletion fails
+    } catch (storageError) {
+      console.error('Error deleting file from storage:', storageError);
+      // Continue with database deletion even if storage deletion fails
     }
 
-    // Delete file from database
     await prisma.file.delete({
       where: { id },
     });

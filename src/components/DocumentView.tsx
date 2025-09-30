@@ -42,13 +42,11 @@ export default function DocumentView({
     openDeleteModal,
   } = useDocumentViewStore();
 
-  // Initialize current folder from URL
   useEffect(() => {
     const folderId = searchParams.get('folder');
     setCurrentFolderId(folderId);
   }, [searchParams, setCurrentFolderId]);
 
-  // Load data when current folder changes
   useEffect(() => {
     if (showOnlyFiles) {
       // When showing only files, load all files from all folders
@@ -60,7 +58,6 @@ export default function DocumentView({
     }
   }, [currentFolderId, showOnlyFiles, loadFolders, loadFiles, loadAllFiles]);
 
-  // Event handlers
   const handleFileClick = (file: FileType) => {
     openFilePreviewModal(file);
   };

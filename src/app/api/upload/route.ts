@@ -14,7 +14,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get or create user
     let user = await prisma.user.findUnique({
       where: { email: session.user.email },
     });
@@ -38,7 +37,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
-    // Validate file type
     if (file.type !== 'application/pdf') {
       return NextResponse.json(
         { error: 'Only PDF files are allowed' },
@@ -46,7 +44,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate file size (10MB limit)
     if (file.size > 10 * 1024 * 1024) {
       return NextResponse.json(
         { error: 'File size must be less than 10MB' },
@@ -54,7 +51,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check for existing file with same name in same location
     const existingFile = await prisma.file.findFirst({
       where: {
         name: file.name,
@@ -75,11 +71,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Handle file naming based on resolution
+    const storageMethod = getStorageMethod();
     let finalFileName = file.name;
 
     if (existingFile && resolution === 'keep-both') {
-      // Generate new name with (1), (2), etc.
       const fileExtension = file.name.split('.').pop() || '';
       const baseName = file.name.replace(/\.[^/.]+$/, '');
       let counter = 1;
@@ -101,30 +96,34 @@ export async function POST(request: NextRequest) {
         counter++;
       }
     } else if (existingFile && resolution === 'overwrite') {
-      // Delete the existing file record
+      // Delete from cloud storage if using Vercel Blob
+      if (storageMethod === 'vercel-blob' && existingFile.path.includes('vercel-storage.com')) {
+        try {
+          const { del } = await import('@vercel/blob');
+          await del(existingFile.path, {
+            token: process.env.BLOB_READ_WRITE_TOKEN,
+          });
+        } catch (error) {
+          console.error('Failed to delete file from cloud storage:', error);
+          // Continue with database deletion even if cloud deletion fails
+        }
+      }
+
       await prisma.file.delete({
         where: { id: existingFile.id },
       });
-
-      // Note: In production, you might want to also delete from cloud storage
-      // This would require storing the storage URL/key and calling the delete API
     }
 
-    // Upload file to storage
     const buffer = Buffer.from(await file.arrayBuffer());
-    const storageMethod = getStorageMethod();
-
     let fileUrl: string;
 
     if (storageMethod === 'vercel-blob') {
-      // Generate unique filename for storage
       const fileExtension = finalFileName.split('.').pop() || '';
       const uniqueFilename = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExtension}`;
 
       const result = await uploadToVercelBlob(buffer, uniqueFilename);
       fileUrl = result.url;
     } else if (storageMethod === 'local') {
-      // Local storage for development
       const fs = await import('fs-extra');
       const path = await import('path');
 

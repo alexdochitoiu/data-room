@@ -216,14 +216,21 @@ export async function DELETE(request: NextRequest) {
         where: { folderId, userId: user.id },
       });
 
-      // Delete files from filesystem
+      // Delete files from storage (cloud or local)
       for (const file of files) {
         try {
-          if (await fs.pathExists(file.path)) {
+          if (file.path.includes('vercel-storage.com')) {
+            // Delete from Vercel Blob storage
+            const { del } = await import('@vercel/blob');
+            await del(file.path, {
+              token: process.env.BLOB_READ_WRITE_TOKEN,
+            });
+          } else if (await fs.pathExists(file.path)) {
+            // Delete from local filesystem
             await fs.unlink(file.path);
           }
-        } catch (fsError) {
-          console.error('Error deleting file from filesystem:', fsError);
+        } catch (storageError) {
+          console.error('Error deleting file from storage:', storageError);
           // Continue with other files even if one fails
         }
       }
