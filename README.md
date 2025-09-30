@@ -1,131 +1,180 @@
-# Data Room - Social Login Implementation
+# Data Room
 
-A Next.js TypeScript application with social authentication using Google and GitHub OAuth providers.
+A modern, secure file management system built with Next.js and TypeScript. This production-ready application provides cloud-based file storage with folder organization, file sharing, and OAuth authentication.
+
+🌐 **Live Demo**: [https://data-room-doc.vercel.app](https://data-room-doc.vercel.app)
 
 ## Features
 
-- ✅ **Social Login**: Google & GitHub OAuth integration
-- ✅ **NextAuth.js**: Secure authentication with JWT sessions
-- ✅ **Protected Routes**: Middleware-based route protection
-- ✅ **TypeScript**: Full type safety
-- ✅ **Tailwind CSS**: Modern UI styling
-- ✅ **Bun**: Fast package manager and runtime
+- 📁 **File & Folder Management**: Create, organize, and manage files in a hierarchical folder structure
+- ☁️ **Cloud Storage**: Vercel Blob storage for secure, scalable file uploads
+- 🔐 **OAuth Authentication**: Sign in with Google or GitHub
+- 📱 **Responsive Design**: Modern UI built with shadcn/ui and Tailwind CSS
+- 🔍 **File Search**: Real-time search across files and folders
+- 📊 **File Conflict Resolution**: Smart conflict handling during file uploads
+- 🗂️ **Multiple View Modes**: Tree view and flat file view for different workflows
+- 🛡️ **Error Boundaries**: Comprehensive error handling and user feedback
+- ⚡ **Performance Optimized**: Built with Next.js 15 App Router for speed
 
-## Getting Started
+## Technology Stack
 
-### 1. Install Dependencies
+- **Frontend**: Next.js 15.5.4, TypeScript, Tailwind CSS, shadcn/ui
+- **Backend**: Next.js API Routes, Prisma ORM
+- **Database**: PostgreSQL (Neon for production)
+- **Authentication**: NextAuth.js with Google/GitHub OAuth
+- **Storage**: Vercel Blob (production), Local filesystem (development)
+- **State Management**: Zustand
+- **Validation**: Zod for type-safe schema validation
+- **Deployment**: Vercel Platform
 
-```bash
-bun install
-```
+## Local Development
 
-### 2. Set Up OAuth Providers
+### Prerequisites
 
-#### Google OAuth Setup
+- Node.js 18+ or Bun
+- PostgreSQL database (local or cloud)
+- OAuth applications (Google and GitHub)
+
+### Setup
+
+1. **Clone the repository**
+
+   ```bash
+   git clone https://github.com/alexdochitoiu/data-room.git
+   cd data-room
+   ```
+
+2. **Install dependencies**
+
+   ```bash
+   bun install
+   ```
+
+3. **Environment Configuration**
+
+   Create a `.env.local` file:
+
+   ```env
+   # Database
+   DATABASE_URL="postgresql://username:password@localhost:5432/dataroom"
+
+   # NextAuth
+   NEXTAUTH_URL="http://localhost:3000"
+   NEXTAUTH_SECRET="your-secret-key"
+
+   # OAuth Providers
+   GOOGLE_CLIENT_ID="your-google-client-id"
+   GOOGLE_CLIENT_SECRET="your-google-client-secret"
+   GITHUB_ID="your-github-client-id"
+   GITHUB_SECRET="your-github-client-secret"
+
+   # Vercel Blob (optional for development)
+   BLOB_READ_WRITE_TOKEN="your-vercel-blob-token"
+   ```
+
+4. **Database Setup**
+
+   ```bash
+   # Generate Prisma client
+   bunx prisma generate
+
+   # Run migrations
+   bunx prisma db push
+   ```
+
+5. **Start Development Server**
+
+   ```bash
+   bun run dev
+   ```
+
+   Open [http://localhost:3000](http://localhost:3000) to view the application.
+
+### OAuth Provider Setup
+
+#### Google OAuth
 
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project or select an existing one
-3. Enable the Google+ API
-4. Go to "Credentials" → "Create Credentials" → "OAuth 2.0 Client IDs"
-5. Configure the OAuth consent screen
-6. Add authorized redirect URIs:
-   - `http://localhost:3000/api/auth/callback/google` (development)
-   - `https://yourdomain.com/api/auth/callback/google` (production)
+2. Create/select a project
+3. Enable Google+ API
+4. Create OAuth 2.0 Client ID
+5. Add authorized redirect URI: `http://localhost:3000/api/auth/callback/google`
 
-#### GitHub OAuth Setup
+#### GitHub OAuth
 
-1. Go to [GitHub Settings](https://github.com/settings/developers)
-2. Click "New OAuth App"
-3. Fill in the application details:
-   - **Application name**: Data Room
-   - **Homepage URL**: `http://localhost:3000`
-   - **Authorization callback URL**: `http://localhost:3000/api/auth/callback/github`
-
-### 3. Environment Variables
-
-Create a `.env.local` file in the root directory:
-
-```env
-# NextAuth Configuration
-NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=your-secret-key-here-change-this-in-production
-
-# Google OAuth
-GOOGLE_CLIENT_ID=your-google-client-id
-GOOGLE_CLIENT_SECRET=your-google-client-secret
-
-# GitHub OAuth
-GITHUB_ID=your-github-client-id
-GITHUB_SECRET=your-github-client-secret
-```
-
-**Important**:
-
-- Generate a strong `NEXTAUTH_SECRET` for production
-- Replace all placeholder values with your actual OAuth credentials
-
-### 4. Run the Development Server
-
-```bash
-bun run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+1. Go to [GitHub Settings > Developer settings > OAuth Apps](https://github.com/settings/developers)
+2. Create new OAuth App
+3. Set Authorization callback URL: `http://localhost:3000/api/auth/callback/github`
 
 ## Project Structure
 
 ```
 src/
 ├── app/
-│   ├── api/auth/[...nextauth]/  # NextAuth API routes
-│   ├── auth/signin/            # Custom sign-in page
-│   ├── dashboard/              # Protected dashboard
-│   ├── layout.tsx              # Root layout with providers
-│   └── page.tsx                # Home page
+│   ├── api/
+│   │   ├── auth/           # NextAuth configuration
+│   │   ├── files/          # File management APIs
+│   │   ├── folders/        # Folder management APIs
+│   │   └── upload/         # File upload endpoints
+│   ├── dashboard/          # Main application dashboard
+│   ├── not-found.tsx      # 404 error page
+│   ├── error.tsx          # Error boundary
+│   └── loading.tsx        # Loading states
 ├── components/
-│   ├── Navigation.tsx          # Navigation with auth state
-│   └── Providers.tsx           # Session provider wrapper
-├── types/
-│   └── next-auth.d.ts         # NextAuth type extensions
-└── middleware.ts              # Route protection middleware
+│   ├── DocumentView/      # Main file manager interface
+│   ├── ui/                # shadcn/ui components
+│   └── modals/            # Modal dialogs
+├── lib/
+│   ├── auth.ts            # Authentication configuration
+│   ├── storage.ts         # Cloud storage abstraction
+│   └── store.ts           # Zustand state management
+├── prisma/
+│   └── schema.prisma      # Database schema
+└── types/                 # TypeScript type definitions
 ```
-
-## Authentication Flow
-
-1. **Sign In**: Users click "Sign In" → redirected to custom sign-in page
-2. **Provider Selection**: Choose Google or GitHub
-3. **OAuth Redirect**: Redirected to provider for authentication
-4. **Callback**: Provider redirects back with auth code
-5. **Session Creation**: NextAuth creates JWT session
-6. **Protected Access**: Middleware protects specified routes
-
-## Protected Routes
-
-The following routes are protected by authentication middleware:
-
-- `/dashboard/*` - Main dashboard area
-- `/profile/*` - User profile pages
-- `/admin/*` - Administrative pages
 
 ## Available Scripts
 
-- `bun run dev` - Start development server
-- `bun run build` - Build for production
+- `bun run dev` - Start development server with Turbopack
+- `bun run build` - Build for production (includes Prisma generation)
 - `bun run start` - Start production server
 - `bun run lint` - Run ESLint
+- `bun run format` - Format code with Prettier
+- `bun run format:check` - Check code formatting
+- `bun run db:generate` - Generate Prisma client
+- `bun run db:migrate` - Run database migrations (development)
+- `bun run db:push` - Push schema changes to database
+- `bun run db:seed` - Seed database with initial data
 
-## Security Considerations
+## Production Deployment
 
-- Environment variables for sensitive data
-- Secure JWT sessions
-- HTTPS required in production
-- CSRF protection enabled by default
-- Secure cookie settings
+This application is deployed on Vercel with:
 
-## Next Steps
+- **Database**: Neon PostgreSQL
+- **Storage**: Vercel Blob
+- **Authentication**: OAuth with domain verification
+- **CDN**: Automatic optimization and global distribution
 
-1. **Configure OAuth Apps**: Set up Google and GitHub OAuth applications
-2. **Update Environment**: Add your OAuth credentials to `.env.local`
-3. **Test Authentication**: Try signing in with both providers
-4. **Customize UI**: Modify components to match your design
-5. **Add Features**: Implement file upload, user management, etc.
+## Future Enhancements
+
+#### Performance
+
+- 📄 Pagination with infinite loading
+- 🎯 Smart filtering by content and file properties
+- 🔍 Enhanced search with fuzzy matching
+
+#### UI/UX
+
+- 📊 Grid view layout
+- 📱 Better mobile experience / responsiveness
+
+#### Data Management
+
+- 🗂️ Smart archive system with restore option
+- 📋 Bulk operations (multi-select)
+- 🔄 File versioning and history
+
+#### Advanced Features
+
+- 👥 Real-time collaboration
+- 🔗 Advanced sharing with permissions
