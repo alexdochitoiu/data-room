@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   FolderPlus,
@@ -20,21 +20,15 @@ import { FileUploadModal } from './modals/FileUploadModal';
 import { FilePreviewModal } from './modals/FilePreviewModal';
 import { RenameModal } from './modals/RenameModal';
 import { DeleteConfirmationModal } from './modals/DeleteConfirmationModal';
+import { Breadcrumbs } from './Breadcrumbs';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb';
-import { BreadcrumbData, FileType, FolderType } from '@/types/types';
+import { FileType, FolderType } from '@/types/types';
+import { useDocumentViewStore } from '@/stores/documentViewStore';
 
 interface DocumentViewProps {
   title?: string;
@@ -47,178 +41,102 @@ export default function DocumentView({
 }: DocumentViewProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isNewFolderModalOpen, setIsNewFolderModalOpen] = useState(false);
-  const [isFileUploadModalOpen, setIsFileUploadModalOpen] = useState(false);
-  const [isFilePreviewModalOpen, setIsFilePreviewModalOpen] = useState(false);
-  const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<FileType | null>(null);
-  const [itemToRename, setItemToRename] = useState<{
-    id: string;
-    name: string;
-    type: 'folder' | 'file';
-  } | null>(null);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState<{
-    id: string;
-    name: string;
-    type: 'folder' | 'file';
-  } | null>(null);
-  const [folders, setFolders] = useState<FolderType[]>([]);
-  const [files, setFiles] = useState<FileType[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
-  const [breadcrumbs, setBreadcrumbs] = useState<BreadcrumbData[]>([]);
+
+  // Zustand store
+  const {
+    // State
+    folders,
+    files,
+    currentFolderId,
+    searchQuery,
+    isLoading,
+    isNewFolderModalOpen,
+    isFileUploadModalOpen,
+    isFilePreviewModalOpen,
+    isRenameModalOpen,
+    isDeleteModalOpen,
+    selectedFile,
+    itemToRename,
+    itemToDelete,
+
+    // Actions
+    setCurrentFolderId,
+    setSearchQuery,
+    addFolder,
+    addFile,
+    updateFolder,
+    updateFile,
+    loadFolders,
+    loadFiles,
+    deleteItem,
+
+    // Modal actions
+    openNewFolderModal,
+    closeNewFolderModal,
+    openFileUploadModal,
+    closeFileUploadModal,
+    openFilePreviewModal,
+    closeFilePreviewModal,
+    openRenameModal,
+    closeRenameModal,
+    openDeleteModal,
+    closeDeleteModal,
+  } = useDocumentViewStore();
 
   // Initialize current folder from URL
   useEffect(() => {
     const folderId = searchParams.get('folder');
     setCurrentFolderId(folderId);
-  }, [searchParams]);
+  }, [searchParams, setCurrentFolderId]);
 
-  // Load folders, files and breadcrumbs when current folder changes
+  // Load data when current folder changes
   useEffect(() => {
     if (!showOnlyFiles) {
       loadFolders(currentFolderId);
     }
     loadFiles(currentFolderId);
-    loadBreadcrumbs(currentFolderId);
-  }, [currentFolderId, showOnlyFiles]);
+  }, [currentFolderId, showOnlyFiles, loadFolders, loadFiles]);
 
-  const loadFolders = async (parentId: string | null = null) => {
-    setIsLoading(true);
-    try {
-      const url = parentId
-        ? `/api/folders?parentId=${parentId}`
-        : '/api/folders';
-      const response = await fetch(url);
-      if (response.ok) {
-        const data = await response.json();
-        setFolders(data);
-      }
-    } catch (error) {
-      console.error('Failed to load folders:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const loadFiles = async (folderId: string | null = null) => {
-    setIsLoading(true);
-    try {
-      const url = folderId ? `/api/files?folderId=${folderId}` : '/api/files';
-      const response = await fetch(url);
-      if (response.ok) {
-        const data = await response.json();
-        setFiles(data);
-      }
-    } catch (error) {
-      console.error('Failed to load files:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const loadBreadcrumbs = async (folderId: string | null) => {
-    if (!folderId) {
-      setBreadcrumbs([]);
-      return;
-    }
-
-    try {
-      const response = await fetch(
-        `/api/folders/breadcrumbs?folderId=${folderId}`
-      );
-      if (response.ok) {
-        const data = await response.json();
-        setBreadcrumbs(data);
-      }
-    } catch (error) {
-      console.error('Failed to load breadcrumbs:', error);
-      setBreadcrumbs([]);
-    }
-  };
-
+  // Event handlers
   const handleFolderCreated = (folder: FolderType) => {
-    setFolders(prev => [...prev, folder]);
+    addFolder(folder);
   };
 
   const handleFileUploaded = (file: FileType) => {
-    setFiles(prev => [...prev, file]);
+    addFile(file);
   };
 
   const handleFileClick = (file: FileType) => {
-    setSelectedFile(file);
-    setIsFilePreviewModalOpen(true);
+    openFilePreviewModal(file);
   };
 
   const handleRenameFolder = (folder: FolderType) => {
-    setItemToRename({ id: folder.id, name: folder.name, type: 'folder' });
-    setIsRenameModalOpen(true);
+    openRenameModal({ id: folder.id, name: folder.name, type: 'folder' });
   };
 
   const handleRenameFile = (file: FileType) => {
-    setItemToRename({ id: file.id, name: file.name, type: 'file' });
-    setIsRenameModalOpen(true);
+    openRenameModal({ id: file.id, name: file.name, type: 'file' });
   };
 
   const handleItemRenamed = (renamedItem: FolderType | FileType) => {
     if (itemToRename?.type === 'folder') {
-      setFolders(prev =>
-        prev.map(folder =>
-          folder.id === renamedItem.id ? { ...folder, ...renamedItem } : folder
-        )
-      );
+      updateFolder(renamedItem.id, renamedItem);
     } else if (itemToRename?.type === 'file') {
-      setFiles(prev =>
-        prev.map(file =>
-          file.id === renamedItem.id ? { ...file, ...renamedItem } : file
-        )
-      );
+      updateFile(renamedItem.id, renamedItem);
     }
   };
 
   const handleDeleteFolder = (folder: FolderType) => {
-    setItemToDelete({ id: folder.id, name: folder.name, type: 'folder' });
-    setIsDeleteModalOpen(true);
+    openDeleteModal({ id: folder.id, name: folder.name, type: 'folder' });
   };
 
   const handleDeleteFile = (file: FileType) => {
-    setItemToDelete({ id: file.id, name: file.name, type: 'file' });
-    setIsDeleteModalOpen(true);
+    openDeleteModal({ id: file.id, name: file.name, type: 'file' });
   };
 
   const confirmDelete = async () => {
     if (!itemToDelete) return;
-
-    try {
-      const endpoint =
-        itemToDelete.type === 'folder' ? '/api/folders' : '/api/files';
-      const response = await fetch(endpoint, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ id: itemToDelete.id }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete item');
-      }
-
-      // Optimistic update: remove item from state immediately
-      if (itemToDelete.type === 'folder') {
-        setFolders(prev =>
-          prev.filter(folder => folder.id !== itemToDelete.id)
-        );
-      } else {
-        setFiles(prev => prev.filter(file => file.id !== itemToDelete.id));
-      }
-    } catch (error) {
-      console.error('Error deleting item:', error);
-      // You might want to show a toast notification here
-      throw error;
-    }
+    await deleteItem(itemToDelete.id, itemToDelete.type);
   };
 
   const handleFolderClick = (folderId: string) => {
@@ -226,14 +144,6 @@ export default function DocumentView({
     // Stay on the current page, just update the folder parameter
     const currentPath = window.location.pathname;
     router.push(`${currentPath}?folder=${folderId}`);
-  };
-
-  const handleBreadcrumbNavigate = (folderId: string | null) => {
-    setCurrentFolderId(folderId);
-    // Stay on the current page, just update or remove the folder parameter
-    const currentPath = window.location.pathname;
-    const url = folderId ? `${currentPath}?folder=${folderId}` : currentPath;
-    router.push(url);
   };
 
   const filteredFolders = showOnlyFiles
@@ -255,11 +165,7 @@ export default function DocumentView({
 
           <div className="flex items-center space-x-3">
             {!showOnlyFiles && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsNewFolderModalOpen(true)}
-              >
+              <Button variant="outline" size="sm" onClick={openNewFolderModal}>
                 <FolderPlus className="h-4 w-4 mr-2" />
                 New Folder
               </Button>
@@ -267,7 +173,7 @@ export default function DocumentView({
             <Button
               size="sm"
               className="bg-blue-600 hover:bg-blue-700"
-              onClick={() => setIsFileUploadModalOpen(true)}
+              onClick={openFileUploadModal}
             >
               <Upload className="h-4 w-4 mr-2" />
               Upload Files
@@ -275,47 +181,8 @@ export default function DocumentView({
           </div>
         </div>
 
-        {/* Breadcrumbs - Only show when not at root level */}
-        {breadcrumbs.length > 0 && (
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink
-                  href="#"
-                  onClick={e => {
-                    e.preventDefault();
-                    handleBreadcrumbNavigate(null);
-                  }}
-                  className="flex items-center gap-1"
-                >
-                  <Home className="h-4 w-4" />
-                  Home
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-
-              {breadcrumbs.map((item, index) => (
-                <div key={item.id} className="flex items-center">
-                  <BreadcrumbSeparator />
-                  <BreadcrumbItem>
-                    {index === breadcrumbs.length - 1 ? (
-                      <BreadcrumbPage>{item.name}</BreadcrumbPage>
-                    ) : (
-                      <BreadcrumbLink
-                        href="#"
-                        onClick={e => {
-                          e.preventDefault();
-                          handleBreadcrumbNavigate(item.id);
-                        }}
-                      >
-                        {item.name}
-                      </BreadcrumbLink>
-                    )}
-                  </BreadcrumbItem>
-                </div>
-              ))}
-            </BreadcrumbList>
-          </Breadcrumb>
-        )}
+        {/* Breadcrumbs */}
+        <Breadcrumbs />
       </div>
 
       {/* Search Bar */}
@@ -355,17 +222,14 @@ export default function DocumentView({
             </p>
             <div className="flex space-x-3">
               {!showOnlyFiles && (
-                <Button
-                  variant="outline"
-                  onClick={() => setIsNewFolderModalOpen(true)}
-                >
+                <Button variant="outline" onClick={openNewFolderModal}>
                   <FolderPlus className="h-4 w-4 mr-2" />
                   New Folder
                 </Button>
               )}
               <Button
                 className="bg-blue-600 hover:bg-blue-700"
-                onClick={() => setIsFileUploadModalOpen(true)}
+                onClick={openFileUploadModal}
               >
                 <Upload className="h-4 w-4 mr-2" />
                 Upload Files
@@ -481,7 +345,7 @@ export default function DocumentView({
       {/* New Folder Modal */}
       <NewFolderModal
         isOpen={isNewFolderModalOpen}
-        onClose={() => setIsNewFolderModalOpen(false)}
+        onClose={closeNewFolderModal}
         onFolderCreated={handleFolderCreated}
         parentId={currentFolderId || undefined}
       />
@@ -489,7 +353,7 @@ export default function DocumentView({
       {/* File Upload Modal */}
       <FileUploadModal
         isOpen={isFileUploadModalOpen}
-        onClose={() => setIsFileUploadModalOpen(false)}
+        onClose={closeFileUploadModal}
         onFileUploaded={handleFileUploaded}
         folderId={currentFolderId || undefined}
       />
@@ -497,20 +361,14 @@ export default function DocumentView({
       {/* File Preview Modal */}
       <FilePreviewModal
         isOpen={isFilePreviewModalOpen}
-        onClose={() => {
-          setIsFilePreviewModalOpen(false);
-          setSelectedFile(null);
-        }}
+        onClose={closeFilePreviewModal}
         file={selectedFile}
       />
 
       {/* Rename Modal */}
       <RenameModal
         isOpen={isRenameModalOpen}
-        onClose={() => {
-          setIsRenameModalOpen(false);
-          setItemToRename(null);
-        }}
+        onClose={closeRenameModal}
         onRenamed={handleItemRenamed}
         item={itemToRename}
       />
@@ -518,10 +376,7 @@ export default function DocumentView({
       {/* Delete Confirmation Modal */}
       <DeleteConfirmationModal
         isOpen={isDeleteModalOpen}
-        onClose={() => {
-          setIsDeleteModalOpen(false);
-          setItemToDelete(null);
-        }}
+        onClose={closeDeleteModal}
         onConfirm={confirmDelete}
         title={`Delete ${itemToDelete?.type || 'Item'}`}
         description={`Are you sure you want to delete this ${itemToDelete?.type || 'item'}?`}
