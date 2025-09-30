@@ -33,35 +33,11 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
+import { BreadcrumbData, FileType, FolderType } from '@/types/types';
 
 interface DocumentViewProps {
   title?: string;
   showOnlyFiles?: boolean;
-}
-
-interface FolderType {
-  id: string;
-  name: string;
-  path: string;
-  parentId?: string | null;
-  createdAt: string;
-  _count: {
-    children: number;
-    files: number;
-  };
-}
-
-interface BreadcrumbData {
-  id: string | null;
-  name: string;
-  path: string;
-}
-
-interface FileType {
-  id: string;
-  name: string;
-  size: string;
-  modifiedAt: string;
 }
 
 export default function DocumentView({

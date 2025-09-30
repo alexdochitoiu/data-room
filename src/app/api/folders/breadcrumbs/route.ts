@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../../auth/[...nextauth]/route';
 import { prisma } from '@/lib/prisma';
+import { BreadcrumbData } from '@/types/types';
 
 export async function GET(request: NextRequest) {
   try {
@@ -31,7 +32,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Build breadcrumb trail by traversing up the hierarchy
-    const breadcrumbs = [];
+    const breadcrumbs: BreadcrumbData[] = [];
     let currentFolder: typeof folder | null = folder;
 
     while (currentFolder) {

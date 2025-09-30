@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { formatDate, formatFileSize } from '@/lib/utils';
 import { renameFileSchema } from './validations';
 import z from 'zod';
+import { FileType } from '@/types/types';
 
 export async function GET(request: NextRequest) {
   try {
@@ -26,7 +27,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Format the files to match the expected interface
-    const formattedFiles = files.map(file => ({
+    const formattedFiles = files.map<FileType>(file => ({
       id: file.id,
       name: file.name,
       size: formatFileSize(file.size),
