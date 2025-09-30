@@ -3,7 +3,7 @@
 import { useSession, signOut, signIn } from 'next-auth/react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, FileText, LogOut } from 'lucide-react';
+import { Home, FileText, LogOut, Github } from 'lucide-react';
 import Logo from '@/components/Logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -76,6 +76,19 @@ export default function SidebarLayout({ children }: SidebarLayoutProps) {
             );
           })}
         </nav>
+
+        {/* Source Code Link */}
+        <div className="px-4 pb-2">
+          <a
+            href="https://github.com/alexdochitoiu/data-room"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center px-3 py-2 text-xs font-medium rounded-lg text-slate-400 hover:bg-slate-700 hover:text-slate-300 transition-colors"
+          >
+            <Github className="mr-2 h-4 w-4" />
+            View Source
+          </a>
+        </div>
 
         {/* User Profile / Login */}
         <div className="p-4 border-t border-slate-700">
