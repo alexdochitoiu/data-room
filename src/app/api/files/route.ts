@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
-import { authOptions } from '../auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { formatDate, formatFileSize } from '@/lib/utils';
 import { renameFileSchema, deleteFileSchema } from './validations';
 import z from 'zod';
 import fs from 'fs-extra';
-import { FileType, ExtendedFileType } from '@/types/types';
+import { ExtendedFileType } from '@/types/types';
 
 export async function GET(request: NextRequest) {
   try {

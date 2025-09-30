@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
-import { authOptions } from '../../auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import fs from 'fs-extra';
+import { getStorageMethod } from '@/lib/storage';
 
 export async function GET(
   request: NextRequest,
@@ -29,25 +29,42 @@ export async function GET(
       return NextResponse.json({ error: 'File not found' }, { status: 404 });
     }
 
-    // Check if file exists on disk
-    if (!(await fs.pathExists(file.path))) {
+    const storageMethod = getStorageMethod();
+
+    if (storageMethod === 'vercel-blob') {
+      // For cloud storage, redirect to the URL directly
+      // This is more efficient and leverages CDN capabilities
+      return NextResponse.redirect(file.path);
+    } else if (storageMethod === 'local') {
+      // For local storage in development
+      const fs = await import('fs-extra');
+
+      // file.path contains the local file path
+      if (!(await fs.pathExists(file.path))) {
+        return NextResponse.json(
+          { error: 'File not found on disk' },
+          { status: 404 }
+        );
+      }
+
+      const fileBuffer = await fs.readFile(file.path);
+
+      return new NextResponse(fileBuffer, {
+        headers: {
+          'Content-Type': file.mimeType,
+          'Content-Length': file.size.toString(),
+          'Content-Disposition': `inline; filename="${file.originalName}"`,
+          'Cache-Control': 'private, max-age=3600',
+        },
+      });
+    } else {
       return NextResponse.json(
-        { error: 'File not found on disk' },
-        { status: 404 }
+        {
+          error: `Storage method ${storageMethod} not supported for file serving`,
+        },
+        { status: 500 }
       );
     }
-
-    // Read and serve the file
-    const fileBuffer = await fs.readFile(file.path);
-
-    return new NextResponse(fileBuffer, {
-      headers: {
-        'Content-Type': file.mimeType,
-        'Content-Length': file.size.toString(),
-        'Content-Disposition': `inline; filename="${file.originalName}"`,
-        'Cache-Control': 'private, max-age=3600',
-      },
-    });
   } catch (error) {
     console.error('Error serving file:', error);
     return NextResponse.json(

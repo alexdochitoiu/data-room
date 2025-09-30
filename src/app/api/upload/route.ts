@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
-import { authOptions } from '../auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import fs from 'fs-extra';
-import path from 'path';
 import { formatDate, formatFileSize } from '@/lib/utils';
 import { ConflictResolution } from '@/types/types';
+import { uploadToVercelBlob, getStorageMethod } from '@/lib/storage';
 
 export async function POST(request: NextRequest) {
   try {
@@ -81,12 +80,12 @@ export async function POST(request: NextRequest) {
 
     if (existingFile && resolution === 'keep-both') {
       // Generate new name with (1), (2), etc.
-      const fileExtension = path.extname(file.name);
-      const baseName = path.basename(file.name, fileExtension);
+      const fileExtension = file.name.split('.').pop() || '';
+      const baseName = file.name.replace(/\.[^/.]+$/, '');
       let counter = 1;
 
       while (true) {
-        const testName = `${baseName} (${counter})${fileExtension}`;
+        const testName = `${baseName} (${counter}).${fileExtension}`;
         const testFile = await prisma.file.findFirst({
           where: {
             name: testName,
@@ -102,31 +101,45 @@ export async function POST(request: NextRequest) {
         counter++;
       }
     } else if (existingFile && resolution === 'overwrite') {
-      // Delete the existing file
+      // Delete the existing file record
       await prisma.file.delete({
         where: { id: existingFile.id },
       });
 
-      // Also delete the physical file
-      try {
-        await fs.remove(existingFile.path);
-      } catch (error) {
-        console.warn('Failed to delete existing file:', error);
-      }
+      // Note: In production, you might want to also delete from cloud storage
+      // This would require storing the storage URL/key and calling the delete API
     }
 
-    // Create uploads directory if it doesn't exist
-    const uploadsDir = path.join(process.cwd(), 'uploads');
-    await fs.ensureDir(uploadsDir);
-
-    // Generate unique filename for storage
-    const fileExtension = path.extname(finalFileName);
-    const uniqueFilename = `${Date.now()}-${Math.random().toString(36).substring(2)}${fileExtension}`;
-    const filePath = path.join(uploadsDir, uniqueFilename);
-
-    // Save file to disk
+    // Upload file to storage
     const buffer = Buffer.from(await file.arrayBuffer());
-    await fs.writeFile(filePath, buffer);
+    const storageMethod = getStorageMethod();
+
+    let fileUrl: string;
+
+    if (storageMethod === 'vercel-blob') {
+      // Generate unique filename for storage
+      const fileExtension = finalFileName.split('.').pop() || '';
+      const uniqueFilename = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExtension}`;
+
+      const result = await uploadToVercelBlob(buffer, uniqueFilename);
+      fileUrl = result.url;
+    } else if (storageMethod === 'local') {
+      // Local storage for development
+      const fs = await import('fs-extra');
+      const path = await import('path');
+
+      const uploadsDir = path.join(process.cwd(), 'uploads');
+      await fs.ensureDir(uploadsDir);
+
+      const fileExtension = finalFileName.split('.').pop() || '';
+      const uniqueFilename = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExtension}`;
+      const filePath = path.join(uploadsDir, uniqueFilename);
+
+      await fs.writeFile(filePath, buffer);
+      fileUrl = `/api/files/${uniqueFilename}/download`; // Local file serving endpoint
+    } else {
+      throw new Error(`Storage method ${storageMethod} not implemented`);
+    }
 
     // Save file metadata to database
     const fileRecord = await prisma.file.create({
@@ -135,7 +148,7 @@ export async function POST(request: NextRequest) {
         originalName: file.name,
         mimeType: file.type,
         size: file.size,
-        path: filePath,
+        path: fileUrl, // Store the cloud storage URL instead of local path
         folderId: folderId || null,
         userId: user.id,
       },

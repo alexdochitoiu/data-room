@@ -41,8 +41,8 @@ export function FileConflictModal({
             <div>
               <DialogTitle>File Already Exists</DialogTitle>
               <DialogDescription className="text-left">
-                A file with the name "{fileName}" already exists in this
-                location.
+                A file with the name &quot;{fileName}&quot; already exists in
+                this location.
               </DialogDescription>
             </div>
           </div>

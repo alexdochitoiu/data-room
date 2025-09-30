@@ -3,7 +3,7 @@
 import { useSession, signOut, signIn } from 'next-auth/react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, FileText, LogOut, User } from 'lucide-react';
+import { Home, FileText, LogOut } from 'lucide-react';
 import Logo from '@/components/Logo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';

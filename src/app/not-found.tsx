@@ -17,7 +17,8 @@ export default function NotFound() {
 
           {/* Description */}
           <p className="text-lg text-gray-600 mb-8">
-            Sorry, we couldn't find the page you're looking for.
+            The page you&apos;re looking for doesn&apos;t exist or may have been
+            moved.
           </p>
 
           {/* Illustration */}
