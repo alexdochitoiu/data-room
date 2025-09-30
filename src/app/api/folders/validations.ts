@@ -15,3 +15,7 @@ export const renameFolderSchema = z.object({
     .min(1, 'Folder name is required')
     .max(255, 'Folder name too long'),
 });
+
+export const deleteFolderSchema = z.object({
+  id: z.string().min(1, 'Folder ID is required'),
+});

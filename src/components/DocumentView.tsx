@@ -19,6 +19,7 @@ import { NewFolderModal } from './NewFolderModal';
 import { FileUploadModal } from './FileUploadModal';
 import { FilePreviewModal } from './FilePreviewModal';
 import { RenameModal } from './RenameModal';
+import { DeleteConfirmationModal } from './DeleteConfirmationModal';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -53,6 +54,12 @@ export default function DocumentView({
   const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<FileType | null>(null);
   const [itemToRename, setItemToRename] = useState<{
+    id: string;
+    name: string;
+    type: 'folder' | 'file';
+  } | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<{
     id: string;
     name: string;
     type: 'folder' | 'file';
@@ -168,6 +175,49 @@ export default function DocumentView({
           file.id === renamedItem.id ? { ...file, ...renamedItem } : file
         )
       );
+    }
+  };
+
+  const handleDeleteFolder = (folder: FolderType) => {
+    setItemToDelete({ id: folder.id, name: folder.name, type: 'folder' });
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDeleteFile = (file: FileType) => {
+    setItemToDelete({ id: file.id, name: file.name, type: 'file' });
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!itemToDelete) return;
+
+    try {
+      const endpoint =
+        itemToDelete.type === 'folder' ? '/api/folders' : '/api/files';
+      const response = await fetch(endpoint, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id: itemToDelete.id }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete item');
+      }
+
+      // Optimistic update: remove item from state immediately
+      if (itemToDelete.type === 'folder') {
+        setFolders(prev =>
+          prev.filter(folder => folder.id !== itemToDelete.id)
+        );
+      } else {
+        setFiles(prev => prev.filter(file => file.id !== itemToDelete.id));
+      }
+    } catch (error) {
+      console.error('Error deleting item:', error);
+      // You might want to show a toast notification here
+      throw error;
     }
   };
 
@@ -363,7 +413,7 @@ export default function DocumentView({
                     <DropdownMenuItem
                       onClick={e => {
                         e.stopPropagation();
-                        // Handle delete folder
+                        handleDeleteFolder(folder);
                       }}
                       className="text-red-600"
                     >
@@ -413,7 +463,7 @@ export default function DocumentView({
                     <DropdownMenuItem
                       onClick={e => {
                         e.stopPropagation();
-                        // Handle delete file
+                        handleDeleteFile(file);
                       }}
                       className="text-red-600"
                     >
@@ -463,6 +513,20 @@ export default function DocumentView({
         }}
         onRenamed={handleItemRenamed}
         item={itemToRename}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setItemToDelete(null);
+        }}
+        onConfirm={confirmDelete}
+        title={`Delete ${itemToDelete?.type || 'Item'}`}
+        description={`Are you sure you want to delete this ${itemToDelete?.type || 'item'}?`}
+        itemName={itemToDelete?.name || ''}
+        itemType={itemToDelete?.type || 'file'}
       />
     </div>
   );

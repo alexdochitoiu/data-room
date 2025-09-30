@@ -7,3 +7,7 @@ export const renameFileSchema = z.object({
     .min(1, 'File name is required')
     .max(255, 'File name too long'),
 });
+
+export const deleteFileSchema = z.object({
+  id: z.string().min(1, 'File ID is required'),
+});

@@ -3,8 +3,9 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../auth/[...nextauth]/route';
 import { prisma } from '@/lib/prisma';
 import { formatDate, formatFileSize } from '@/lib/utils';
-import { renameFileSchema } from './validations';
+import { renameFileSchema, deleteFileSchema } from './validations';
 import z from 'zod';
+import fs from 'fs-extra';
 import { FileType } from '@/types/types';
 
 export async function GET(request: NextRequest) {
@@ -110,6 +111,67 @@ export async function PUT(request: NextRequest) {
     console.error('Error renaming file:', error);
     return NextResponse.json(
       { error: 'Failed to rename file' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const { id } = deleteFileSchema.parse(body);
+
+    // Get user
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    // Check if file exists and belongs to user
+    const existingFile = await prisma.file.findFirst({
+      where: { id, userId: user.id },
+    });
+
+    if (!existingFile) {
+      return NextResponse.json({ error: 'File not found' }, { status: 404 });
+    }
+
+    // Delete file from filesystem
+    try {
+      if (await fs.pathExists(existingFile.path)) {
+        await fs.unlink(existingFile.path);
+      }
+    } catch (fsError) {
+      console.error('Error deleting file from filesystem:', fsError);
+      // Continue with database deletion even if filesystem deletion fails
+    }
+
+    // Delete file from database
+    await prisma.file.delete({
+      where: { id },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: 'File deleted successfully',
+    });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: error.issues }, { status: 400 });
+    }
+
+    console.error('Error deleting file:', error);
+    return NextResponse.json(
+      { error: 'Failed to delete file' },
       { status: 500 }
     );
   }
