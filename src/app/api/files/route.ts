@@ -2,15 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../auth/[...nextauth]/route';
 import { prisma } from '@/lib/prisma';
-import { z } from 'zod';
-
-const renameFileSchema = z.object({
-  id: z.string(),
-  name: z
-    .string()
-    .min(1, 'File name is required')
-    .max(255, 'File name too long'),
-});
+import { formatDate, formatFileSize } from '@/lib/utils';
+import { renameFileSchema } from './validations';
+import z from 'zod';
 
 export async function GET(request: NextRequest) {
   try {
@@ -47,24 +41,6 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
-
-function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 Bytes';
-
-  const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-}
-
-function formatDate(date: Date): string {
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  }).format(new Date(date));
 }
 
 export async function PUT(request: NextRequest) {

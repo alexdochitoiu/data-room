@@ -4,6 +4,7 @@ import { authOptions } from '../auth/[...nextauth]/route';
 import { prisma } from '@/lib/prisma';
 import fs from 'fs-extra';
 import path from 'path';
+import { formatDate, formatFileSize } from '@/lib/utils';
 
 export async function POST(request: NextRequest) {
   try {
@@ -94,22 +95,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
-
-function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 Bytes';
-
-  const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-}
-
-function formatDate(date: Date): string {
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  }).format(new Date(date));
 }

@@ -3,23 +3,7 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../auth/[...nextauth]/route';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
-
-// Validation schemas
-const createFolderSchema = z.object({
-  name: z
-    .string()
-    .min(1, 'Folder name is required')
-    .max(255, 'Folder name too long'),
-  parentId: z.string().optional(),
-});
-
-const renameFolderSchema = z.object({
-  id: z.string(),
-  name: z
-    .string()
-    .min(1, 'Folder name is required')
-    .max(255, 'Folder name too long'),
-});
+import { createFolderSchema, renameFolderSchema } from './validations';
 
 export async function GET(request: NextRequest) {
   try {

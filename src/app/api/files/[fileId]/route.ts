@@ -18,7 +18,6 @@ export async function GET(
     const resolvedParams = await params;
     const fileId = resolvedParams.fileId;
 
-    // Get file from database and verify ownership
     const file = await prisma.file.findFirst({
       where: {
         id: fileId,

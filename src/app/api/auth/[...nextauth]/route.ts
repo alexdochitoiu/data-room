@@ -1,34 +1,7 @@
 import NextAuth from 'next-auth/next';
 import GoogleProvider from 'next-auth/providers/google';
 import GitHubProvider from 'next-auth/providers/github';
-
-interface JWTParams {
-  token: Record<string, unknown> & { id?: string };
-  user?: {
-    id: string;
-    email?: string | null;
-    name?: string | null;
-    image?: string | null;
-  };
-}
-
-interface SessionParams {
-  session: {
-    expires: string;
-    user?: {
-      id?: string;
-      email?: string | null;
-      name?: string | null;
-      image?: string | null;
-    };
-  };
-  token: Record<string, unknown> & { id: string };
-}
-
-interface RedirectParams {
-  url: string;
-  baseUrl: string;
-}
+import { JWTParams, RedirectParams, SessionParams } from './types';
 
 const authOptions = {
   providers: [
