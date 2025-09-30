@@ -5,7 +5,8 @@ import { FileUploadModal } from './modals/FileUploadModal';
 import { FilePreviewModal } from './modals/FilePreviewModal';
 import { RenameModal } from './modals/RenameModal';
 import { DeleteConfirmationModal } from './modals/DeleteConfirmationModal';
-import { FileType, FolderType } from '@/types/types';
+import { FileConflictModal } from './modals/FileConflictModal';
+import { FileType, FolderType, ConflictResolution } from '@/types/types';
 import { useDocumentViewStore } from '@/stores/documentViewStore';
 
 export function Modals() {
@@ -16,9 +17,11 @@ export function Modals() {
     isFilePreviewModalOpen,
     isRenameModalOpen,
     isDeleteModalOpen,
+    isFileConflictModalOpen,
     selectedFile,
     itemToRename,
     itemToDelete,
+    conflictingFile,
     currentFolderId,
 
     // Modal actions
@@ -27,6 +30,7 @@ export function Modals() {
     closeFilePreviewModal,
     closeRenameModal,
     closeDeleteModal,
+    closeFileConflictModal,
 
     // Store methods for handling events
     addFolder,
@@ -58,6 +62,39 @@ export function Modals() {
   const handleConfirmDelete = async () => {
     if (!itemToDelete) return;
     await deleteItem(itemToDelete.id, itemToDelete.type);
+  };
+
+  const handleFileConflictResolve = async (resolution: ConflictResolution) => {
+    if (!conflictingFile) return;
+
+    if (resolution === 'cancel') {
+      return; // Just close the modal, no upload
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('file', conflictingFile.file);
+      formData.append('resolution', resolution);
+      if (conflictingFile.folderId) {
+        formData.append('folderId', conflictingFile.folderId);
+      }
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to upload file');
+      }
+
+      const uploadedFile = await response.json();
+      handleFileUploaded(uploadedFile);
+    } catch (error) {
+      console.error('Failed to resolve file conflict:', error);
+      // You might want to show an error message here
+    }
   };
 
   return (
@@ -102,6 +139,14 @@ export function Modals() {
         description={`Are you sure you want to delete this ${itemToDelete?.type || 'item'}?`}
         itemName={itemToDelete?.name || ''}
         itemType={itemToDelete?.type || 'file'}
+      />
+
+      {/* File Conflict Modal */}
+      <FileConflictModal
+        isOpen={isFileConflictModalOpen}
+        fileName={conflictingFile?.fileName || ''}
+        onResolve={handleFileConflictResolve}
+        onClose={closeFileConflictModal}
       />
     </>
   );

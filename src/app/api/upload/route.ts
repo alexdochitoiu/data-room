@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma';
 import fs from 'fs-extra';
 import path from 'path';
 import { formatDate, formatFileSize } from '@/lib/utils';
+import { ConflictResolution } from '@/types/types';
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,6 +33,7 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const file = formData.get('file') as File;
     const folderId = formData.get('folderId') as string | null;
+    const resolution = formData.get('resolution') as ConflictResolution | null;
 
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
@@ -53,12 +55,72 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check for existing file with same name in same location
+    const existingFile = await prisma.file.findFirst({
+      where: {
+        name: file.name,
+        folderId: folderId || null,
+        userId: user.id,
+      },
+    });
+
+    // If file exists and no resolution provided, return conflict response
+    if (existingFile && !resolution) {
+      return NextResponse.json(
+        {
+          error: 'FILE_CONFLICT',
+          message: 'A file with this name already exists',
+          fileName: file.name,
+        },
+        { status: 409 }
+      );
+    }
+
+    // Handle file naming based on resolution
+    let finalFileName = file.name;
+
+    if (existingFile && resolution === 'keep-both') {
+      // Generate new name with (1), (2), etc.
+      const fileExtension = path.extname(file.name);
+      const baseName = path.basename(file.name, fileExtension);
+      let counter = 1;
+
+      while (true) {
+        const testName = `${baseName} (${counter})${fileExtension}`;
+        const testFile = await prisma.file.findFirst({
+          where: {
+            name: testName,
+            folderId: folderId || null,
+            userId: user.id,
+          },
+        });
+
+        if (!testFile) {
+          finalFileName = testName;
+          break;
+        }
+        counter++;
+      }
+    } else if (existingFile && resolution === 'overwrite') {
+      // Delete the existing file
+      await prisma.file.delete({
+        where: { id: existingFile.id },
+      });
+
+      // Also delete the physical file
+      try {
+        await fs.remove(existingFile.path);
+      } catch (error) {
+        console.warn('Failed to delete existing file:', error);
+      }
+    }
+
     // Create uploads directory if it doesn't exist
     const uploadsDir = path.join(process.cwd(), 'uploads');
     await fs.ensureDir(uploadsDir);
 
-    // Generate unique filename
-    const fileExtension = path.extname(file.name);
+    // Generate unique filename for storage
+    const fileExtension = path.extname(finalFileName);
     const uniqueFilename = `${Date.now()}-${Math.random().toString(36).substring(2)}${fileExtension}`;
     const filePath = path.join(uploadsDir, uniqueFilename);
 
@@ -69,7 +131,7 @@ export async function POST(request: NextRequest) {
     // Save file metadata to database
     const fileRecord = await prisma.file.create({
       data: {
-        name: file.name,
+        name: finalFileName,
         originalName: file.name,
         mimeType: file.type,
         size: file.size,

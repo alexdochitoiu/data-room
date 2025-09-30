@@ -16,6 +16,7 @@ interface DocumentViewState {
   isFilePreviewModalOpen: boolean;
   isRenameModalOpen: boolean;
   isDeleteModalOpen: boolean;
+  isFileConflictModalOpen: boolean;
 
   // Selected items
   selectedFile: FileType | null;
@@ -28,6 +29,11 @@ interface DocumentViewState {
     id: string;
     name: string;
     type: 'folder' | 'file';
+  } | null;
+  conflictingFile: {
+    file: File;
+    fileName: string;
+    folderId?: string;
   } | null;
 
   // Actions
@@ -65,6 +71,12 @@ interface DocumentViewState {
     type: 'folder' | 'file';
   }) => void;
   closeDeleteModal: () => void;
+  openFileConflictModal: (conflictData: {
+    file: File;
+    fileName: string;
+    folderId?: string;
+  }) => void;
+  closeFileConflictModal: () => void;
 
   // API actions
   loadFolders: (parentId?: string | null) => Promise<void>;
@@ -86,9 +98,11 @@ export const useDocumentViewStore = create<DocumentViewState>((set, get) => ({
   isFilePreviewModalOpen: false,
   isRenameModalOpen: false,
   isDeleteModalOpen: false,
+  isFileConflictModalOpen: false,
   selectedFile: null,
   itemToRename: null,
   itemToDelete: null,
+  conflictingFile: null,
 
   // Data actions
   setFolders: folders => set({ folders }),
@@ -156,6 +170,16 @@ export const useDocumentViewStore = create<DocumentViewState>((set, get) => ({
     set({
       isDeleteModalOpen: false,
       itemToDelete: null,
+    }),
+  openFileConflictModal: conflictData =>
+    set({
+      isFileConflictModalOpen: true,
+      conflictingFile: conflictData,
+    }),
+  closeFileConflictModal: () =>
+    set({
+      isFileConflictModalOpen: false,
+      conflictingFile: null,
     }),
 
   // API actions

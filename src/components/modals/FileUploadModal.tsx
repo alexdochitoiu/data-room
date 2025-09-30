@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { useDocumentViewStore } from '@/stores/documentViewStore';
 
 interface FileType {
   id: string;
@@ -35,6 +36,8 @@ export function FileUploadModal({
   const [error, setError] = useState('');
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { openFileConflictModal } = useDocumentViewStore();
 
   const handleFileSelect = (file: File) => {
     // Validate file type
@@ -101,6 +104,21 @@ export function FileUploadModal({
         method: 'POST',
         body: formData,
       });
+
+      if (response.status === 409) {
+        // File conflict detected
+        const errorData = await response.json();
+        if (errorData.error === 'FILE_CONFLICT') {
+          // Close upload modal and open conflict modal
+          handleClose();
+          openFileConflictModal({
+            file: selectedFile,
+            fileName: errorData.fileName,
+            folderId,
+          });
+          return;
+        }
+      }
 
       if (!response.ok) {
         const errorData = await response.json();

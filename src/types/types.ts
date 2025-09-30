@@ -22,3 +22,5 @@ export interface FileType {
   size: string;
   modifiedAt: string;
 }
+
+export type ConflictResolution = 'overwrite' | 'keep-both' | 'cancel';
