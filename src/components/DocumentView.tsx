@@ -15,11 +15,11 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { NewFolderModal } from './NewFolderModal';
-import { FileUploadModal } from './FileUploadModal';
-import { FilePreviewModal } from './FilePreviewModal';
-import { RenameModal } from './RenameModal';
-import { DeleteConfirmationModal } from './DeleteConfirmationModal';
+import { NewFolderModal } from './modals/NewFolderModal';
+import { FileUploadModal } from './modals/FileUploadModal';
+import { FilePreviewModal } from './modals/FilePreviewModal';
+import { RenameModal } from './modals/RenameModal';
+import { DeleteConfirmationModal } from './modals/DeleteConfirmationModal';
 import {
   DropdownMenu,
   DropdownMenuContent,
