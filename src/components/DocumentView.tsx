@@ -23,22 +23,18 @@ export default function DocumentView({
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Zustand store
   const {
-    // State
     folders,
     files,
     currentFolderId,
     searchQuery,
     isLoading,
 
-    // Actions
     setCurrentFolderId,
     loadFolders,
     loadFiles,
     loadAllFiles,
 
-    // Modal actions (only the open actions are needed)
     openNewFolderModal,
     openFileUploadModal,
     openFilePreviewModal,

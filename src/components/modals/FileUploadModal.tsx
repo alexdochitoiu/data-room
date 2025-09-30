@@ -1,12 +1,5 @@
 import { useState, useRef } from 'react';
 import { useDocumentViewStore } from '@/stores/documentViewStore';
-
-interface FileType {
-  id: string;
-  name: string;
-  size: string;
-  modifiedAt: string;
-}
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -17,6 +10,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Upload, File, X } from 'lucide-react';
+import { formatFileSize } from '@/lib/utils';
+import { FileType } from '@/types/types';
 
 interface FileUploadModalProps {
   isOpen: boolean;
@@ -193,7 +188,7 @@ export function FileUploadModal({
                     {selectedFile.name}
                   </p>
                   <p className="text-sm text-gray-500">
-                    {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                    {formatFileSize(selectedFile.size)}
                   </p>
                 </div>
                 <Button

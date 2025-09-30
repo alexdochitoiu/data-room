@@ -1,16 +1,4 @@
 import { useState } from 'react';
-
-interface FolderType {
-  id: string;
-  name: string;
-  path: string;
-  parentId?: string | null;
-  createdAt: string;
-  _count: {
-    children: number;
-    files: number;
-  };
-}
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -21,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { FolderType } from '@/types/types';
 
 interface NewFolderModalProps {
   isOpen: boolean;

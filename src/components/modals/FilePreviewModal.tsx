@@ -8,16 +8,12 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Download, ExternalLink, X } from 'lucide-react';
+import { FileType } from '@/types/types';
 
 interface FilePreviewModalProps {
   isOpen: boolean;
   onClose: () => void;
-  file: {
-    id: string;
-    name: string;
-    size: string;
-    modifiedAt: string;
-  } | null;
+  file: FileType | null;
 }
 
 export function FilePreviewModal({

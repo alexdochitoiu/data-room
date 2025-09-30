@@ -27,7 +27,10 @@ export default function NotFound() {
 
           {/* Actions */}
           <div className="space-y-4 sm:space-y-0 sm:space-x-4 sm:flex sm:justify-center">
-            <Button asChild className="w-full bg-blue-600 hover:!bg-blue-700 sm:w-auto">
+            <Button
+              asChild
+              className="w-full bg-blue-600 hover:!bg-blue-700 sm:w-auto"
+            >
               <Link href="/">
                 <Home className="h-4 w-4 mr-2" />
                 Go Home

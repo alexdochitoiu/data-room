@@ -1,23 +1,4 @@
 import { useState, useEffect, useRef } from 'react';
-
-interface FolderType {
-  id: string;
-  name: string;
-  path: string;
-  parentId?: string | null;
-  createdAt: string;
-  _count: {
-    children: number;
-    files: number;
-  };
-}
-
-interface FileType {
-  id: string;
-  name: string;
-  size: string;
-  modifiedAt: string;
-}
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -29,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { FileType, FolderType } from '@/types/types';
 
 interface RenameModalProps {
   isOpen: boolean;

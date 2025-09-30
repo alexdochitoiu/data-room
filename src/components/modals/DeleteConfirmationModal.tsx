@@ -46,9 +46,8 @@ export function DeleteConfirmationModal({
   };
 
   const handleClose = () => {
-    if (!isDeleting) {
-      onClose();
-    }
+    if (isDeleting) return;
+    onClose();
   };
 
   return (
