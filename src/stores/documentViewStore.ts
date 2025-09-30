@@ -267,6 +267,8 @@ export const useDocumentViewStore = create<DocumentViewState>((set, get) => ({
 
       if (type === 'folder') {
         get().removeFolder(id);
+        // Reload files to ensure any files that were in the deleted folder are also removed from UI
+        get().loadFiles(get().currentFolderId);
       } else {
         get().removeFile(id);
       }

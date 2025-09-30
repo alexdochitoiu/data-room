@@ -235,6 +235,16 @@ export async function DELETE(request: NextRequest) {
         }
       }
 
+      // Delete all file records from database
+      if (files.length > 0) {
+        await prisma.file.deleteMany({
+          where: {
+            folderId,
+            userId: user.id,
+          },
+        });
+      }
+
       // Get all subfolders
       const subfolders = await prisma.folder.findMany({
         where: { parentId: folderId, userId: user.id },
