@@ -23,10 +23,8 @@ export interface FileType {
   modifiedAt: string;
 }
 
-// File conflict resolution options
 export type ConflictResolution = 'overwrite' | 'keep-both' | 'cancel';
 
-// Extended file type with optional folder path for flat view
 export interface ExtendedFileType extends FileType {
   folderPath?: string;
 }

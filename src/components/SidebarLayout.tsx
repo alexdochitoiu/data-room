@@ -117,16 +117,9 @@ export default function SidebarLayout({ children }: SidebarLayoutProps) {
                   </div>
                 </div>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href="/profile" className="flex items-center space-x-2">
-                    <User className="h-4 w-4" />
-                    <span>Profile</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={() => signOut()}
-                  className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                  className="focus:bg-blue-50 cursor-pointer"
                 >
                   <LogOut className="h-4 w-4 mr-2" />
                   <span>Sign Out</span>
