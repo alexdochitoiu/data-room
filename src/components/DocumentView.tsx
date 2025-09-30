@@ -2,16 +2,16 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { 
-  FolderPlus, 
-  Upload, 
-  Folder, 
+import {
+  FolderPlus,
+  Upload,
+  Folder,
   FileText,
   MoreHorizontal,
   Search,
   Home,
   Edit,
-  Trash2
+  Trash2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -24,19 +24,17 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from '@/components/ui/dropdown-menu'
 import {
   Breadcrumb,
-  BreadcrumbEllipsis,
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
+} from '@/components/ui/breadcrumb'
 
 interface DocumentViewProps {
-  currentPath?: string
   title?: string
   showOnlyFiles?: boolean
 }
@@ -66,7 +64,10 @@ interface FileType {
   modifiedAt: string
 }
 
-export default function DocumentView({ currentPath = 'Root', title = 'Welcome to DataRoom', showOnlyFiles = false }: DocumentViewProps) {
+export default function DocumentView({
+  title = 'Welcome to DataRoom',
+  showOnlyFiles = false,
+}: DocumentViewProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [searchQuery, setSearchQuery] = useState('')
@@ -75,7 +76,11 @@ export default function DocumentView({ currentPath = 'Root', title = 'Welcome to
   const [isFilePreviewModalOpen, setIsFilePreviewModalOpen] = useState(false)
   const [isRenameModalOpen, setIsRenameModalOpen] = useState(false)
   const [selectedFile, setSelectedFile] = useState<FileType | null>(null)
-  const [itemToRename, setItemToRename] = useState<{id: string, name: string, type: 'folder' | 'file'} | null>(null)
+  const [itemToRename, setItemToRename] = useState<{
+    id: string
+    name: string
+    type: 'folder' | 'file'
+  } | null>(null)
   const [folders, setFolders] = useState<FolderType[]>([])
   const [files, setFiles] = useState<FileType[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -100,8 +105,8 @@ export default function DocumentView({ currentPath = 'Root', title = 'Welcome to
   const loadFolders = async (parentId: string | null = null) => {
     setIsLoading(true)
     try {
-      const url = parentId 
-        ? `/api/folders?parentId=${parentId}` 
+      const url = parentId
+        ? `/api/folders?parentId=${parentId}`
         : '/api/folders'
       const response = await fetch(url)
       if (response.ok) {
@@ -118,9 +123,7 @@ export default function DocumentView({ currentPath = 'Root', title = 'Welcome to
   const loadFiles = async (folderId: string | null = null) => {
     setIsLoading(true)
     try {
-      const url = folderId 
-        ? `/api/files?folderId=${folderId}` 
-        : '/api/files'
+      const url = folderId ? `/api/files?folderId=${folderId}` : '/api/files'
       const response = await fetch(url)
       if (response.ok) {
         const data = await response.json()
@@ -140,7 +143,9 @@ export default function DocumentView({ currentPath = 'Root', title = 'Welcome to
     }
 
     try {
-      const response = await fetch(`/api/folders/breadcrumbs?folderId=${folderId}`)
+      const response = await fetch(
+        `/api/folders/breadcrumbs?folderId=${folderId}`
+      )
       if (response.ok) {
         const data = await response.json()
         setBreadcrumbs(data)
@@ -174,15 +179,19 @@ export default function DocumentView({ currentPath = 'Root', title = 'Welcome to
     setIsRenameModalOpen(true)
   }
 
-  const handleItemRenamed = (renamedItem: any) => {
+  const handleItemRenamed = (renamedItem: FolderType | FileType) => {
     if (itemToRename?.type === 'folder') {
-      setFolders(prev => prev.map(folder => 
-        folder.id === renamedItem.id ? { ...folder, ...renamedItem } : folder
-      ))
+      setFolders(prev =>
+        prev.map(folder =>
+          folder.id === renamedItem.id ? { ...folder, ...renamedItem } : folder
+        )
+      )
     } else if (itemToRename?.type === 'file') {
-      setFiles(prev => prev.map(file => 
-        file.id === renamedItem.id ? { ...file, ...renamedItem } : file
-      ))
+      setFiles(prev =>
+        prev.map(file =>
+          file.id === renamedItem.id ? { ...file, ...renamedItem } : file
+        )
+      )
     }
   }
 
@@ -201,9 +210,11 @@ export default function DocumentView({ currentPath = 'Root', title = 'Welcome to
     router.push(url)
   }
 
-  const filteredFolders = showOnlyFiles ? [] : folders.filter(folder =>
-    folder.name.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  const filteredFolders = showOnlyFiles
+    ? []
+    : folders.filter(folder =>
+        folder.name.toLowerCase().includes(searchQuery.toLowerCase())
+      )
 
   const filteredFiles = files.filter(file =>
     file.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -215,11 +226,11 @@ export default function DocumentView({ currentPath = 'Root', title = 'Welcome to
       <div className="border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-2xl font-semibold text-gray-900">{title}</h1>
-          
+
           <div className="flex items-center space-x-3">
             {!showOnlyFiles && (
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 size="sm"
                 onClick={() => setIsNewFolderModalOpen(true)}
               >
@@ -227,8 +238,8 @@ export default function DocumentView({ currentPath = 'Root', title = 'Welcome to
                 New Folder
               </Button>
             )}
-            <Button 
-              size="sm" 
+            <Button
+              size="sm"
               className="bg-blue-600 hover:bg-blue-700"
               onClick={() => setIsFileUploadModalOpen(true)}
             >
@@ -237,15 +248,15 @@ export default function DocumentView({ currentPath = 'Root', title = 'Welcome to
             </Button>
           </div>
         </div>
-        
+
         {/* Breadcrumbs - Only show when not at root level */}
         {breadcrumbs.length > 0 && (
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbLink 
+                <BreadcrumbLink
                   href="#"
-                  onClick={(e) => {
+                  onClick={e => {
                     e.preventDefault()
                     handleBreadcrumbNavigate(null)
                   }}
@@ -255,7 +266,7 @@ export default function DocumentView({ currentPath = 'Root', title = 'Welcome to
                   Home
                 </BreadcrumbLink>
               </BreadcrumbItem>
-              
+
               {breadcrumbs.map((item, index) => (
                 <div key={item.id} className="flex items-center">
                   <BreadcrumbSeparator />
@@ -263,9 +274,9 @@ export default function DocumentView({ currentPath = 'Root', title = 'Welcome to
                     {index === breadcrumbs.length - 1 ? (
                       <BreadcrumbPage>{item.name}</BreadcrumbPage>
                     ) : (
-                      <BreadcrumbLink 
+                      <BreadcrumbLink
                         href="#"
-                        onClick={(e) => {
+                        onClick={e => {
                           e.preventDefault()
                           handleBreadcrumbNavigate(item.id)
                         }}
@@ -288,7 +299,9 @@ export default function DocumentView({ currentPath = 'Root', title = 'Welcome to
           <Input
             placeholder="Search files and folders..."
             value={searchQuery}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setSearchQuery(e.target.value)
+            }
             className="pl-10"
           />
         </div>
@@ -310,14 +323,13 @@ export default function DocumentView({ currentPath = 'Root', title = 'Welcome to
               {showOnlyFiles ? 'No files yet' : 'No files or folders yet'}
             </h3>
             <p className="text-gray-500 mb-8 max-w-sm">
-              {showOnlyFiles 
+              {showOnlyFiles
                 ? 'Upload files to get started with your data room.'
-                : 'Get started by uploading files or creating folders to organize your documents.'
-              }
+                : 'Get started by uploading files or creating folders to organize your documents.'}
             </p>
             <div className="flex space-x-3">
               {!showOnlyFiles && (
-                <Button 
+                <Button
                   variant="outline"
                   onClick={() => setIsNewFolderModalOpen(true)}
                 >
@@ -325,7 +337,7 @@ export default function DocumentView({ currentPath = 'Root', title = 'Welcome to
                   New Folder
                 </Button>
               )}
-              <Button 
+              <Button
                 className="bg-blue-600 hover:bg-blue-700"
                 onClick={() => setIsFileUploadModalOpen(true)}
               >
@@ -337,7 +349,7 @@ export default function DocumentView({ currentPath = 'Root', title = 'Welcome to
         ) : (
           <div className="space-y-4">
             {/* Folders */}
-            {filteredFolders.map((folder) => (
+            {filteredFolders.map(folder => (
               <div
                 key={folder.id}
                 className="flex items-center p-3 rounded-lg hover:bg-gray-50 cursor-pointer group"
@@ -347,7 +359,8 @@ export default function DocumentView({ currentPath = 'Root', title = 'Welcome to
                 <div className="flex-1">
                   <h4 className="font-medium text-gray-900">{folder.name}</h4>
                   <p className="text-sm text-gray-500">
-                    {folder._count.children} folders, {folder._count.files} files
+                    {folder._count.children} folders, {folder._count.files}{' '}
+                    files
                   </p>
                 </div>
                 <DropdownMenu>
@@ -356,14 +369,14 @@ export default function DocumentView({ currentPath = 'Root', title = 'Welcome to
                       variant="ghost"
                       size="sm"
                       className="opacity-0 group-hover:opacity-100"
-                      onClick={(e) => e.stopPropagation()}
+                      onClick={e => e.stopPropagation()}
                     >
                       <MoreHorizontal className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
                     <DropdownMenuItem
-                      onClick={(e) => {
+                      onClick={e => {
                         e.stopPropagation()
                         handleRenameFolder(folder)
                       }}
@@ -372,7 +385,7 @@ export default function DocumentView({ currentPath = 'Root', title = 'Welcome to
                       Rename
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      onClick={(e) => {
+                      onClick={e => {
                         e.stopPropagation()
                         // Handle delete folder
                       }}
@@ -387,7 +400,7 @@ export default function DocumentView({ currentPath = 'Root', title = 'Welcome to
             ))}
 
             {/* Files */}
-            {filteredFiles.map((file) => (
+            {filteredFiles.map(file => (
               <div
                 key={file.id}
                 className="flex items-center p-3 rounded-lg hover:bg-gray-50 cursor-pointer group"
@@ -396,7 +409,9 @@ export default function DocumentView({ currentPath = 'Root', title = 'Welcome to
                 <FileText className="h-8 w-8 text-gray-500 mr-4" />
                 <div className="flex-1">
                   <h4 className="font-medium text-gray-900">{file.name}</h4>
-                  <p className="text-sm text-gray-500">{file.size} • {file.modifiedAt}</p>
+                  <p className="text-sm text-gray-500">
+                    {file.size} • {file.modifiedAt}
+                  </p>
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -404,14 +419,14 @@ export default function DocumentView({ currentPath = 'Root', title = 'Welcome to
                       variant="ghost"
                       size="sm"
                       className="opacity-0 group-hover:opacity-100"
-                      onClick={(e) => e.stopPropagation()}
+                      onClick={e => e.stopPropagation()}
                     >
                       <MoreHorizontal className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
                     <DropdownMenuItem
-                      onClick={(e) => {
+                      onClick={e => {
                         e.stopPropagation()
                         handleRenameFile(file)
                       }}
@@ -420,7 +435,7 @@ export default function DocumentView({ currentPath = 'Root', title = 'Welcome to
                       Rename
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      onClick={(e) => {
+                      onClick={e => {
                         e.stopPropagation()
                         // Handle delete file
                       }}

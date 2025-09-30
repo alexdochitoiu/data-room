@@ -1,4 +1,23 @@
 import { useState, useEffect, useRef } from 'react'
+
+interface FolderType {
+  id: string
+  name: string
+  path: string
+  parentId?: string | null
+  createdAt: string
+  _count: {
+    children: number
+    files: number
+  }
+}
+
+interface FileType {
+  id: string
+  name: string
+  size: string
+  modifiedAt: string
+}
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -9,12 +28,12 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
+} from '@/components/ui/dialog'
 
 interface RenameModalProps {
   isOpen: boolean
   onClose: () => void
-  onRenamed: (item: any) => void
+  onRenamed: (item: FolderType | FileType) => void
   item: {
     id: string
     name: string
@@ -22,7 +41,12 @@ interface RenameModalProps {
   } | null
 }
 
-export function RenameModal({ isOpen, onClose, onRenamed, item }: RenameModalProps) {
+export function RenameModal({
+  isOpen,
+  onClose,
+  onRenamed,
+  item,
+}: RenameModalProps) {
   const [newName, setNewName] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
@@ -46,7 +70,7 @@ export function RenameModal({ isOpen, onClose, onRenamed, item }: RenameModalPro
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!item || !newName.trim()) {
       setError('Name is required')
       return
@@ -65,12 +89,12 @@ export function RenameModal({ isOpen, onClose, onRenamed, item }: RenameModalPro
       const response = await fetch(endpoint, {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           id: item.id,
-          name: newName.trim()
-        })
+          name: newName.trim(),
+        }),
       })
 
       if (!response.ok) {
@@ -82,7 +106,9 @@ export function RenameModal({ isOpen, onClose, onRenamed, item }: RenameModalPro
       onRenamed(renamedItem)
       handleClose()
     } catch (err) {
-      setError(err instanceof Error ? err.message : `Failed to rename ${item?.type}`)
+      setError(
+        err instanceof Error ? err.message : `Failed to rename ${item?.type}`
+      )
     } finally {
       setIsLoading(false)
     }
@@ -116,7 +142,7 @@ export function RenameModal({ isOpen, onClose, onRenamed, item }: RenameModalPro
                 ref={inputRef}
                 id="name"
                 value={newName}
-                onChange={(e) => setNewName(e.target.value)}
+                onChange={e => setNewName(e.target.value)}
                 className="col-span-3"
                 placeholder={`Enter ${item.type} name`}
                 disabled={isLoading}
@@ -124,22 +150,20 @@ export function RenameModal({ isOpen, onClose, onRenamed, item }: RenameModalPro
               />
             </div>
             {error && (
-              <div className="text-sm text-red-600 text-center">
-                {error}
-              </div>
+              <div className="text-sm text-red-600 text-center">{error}</div>
             )}
           </div>
           <DialogFooter>
-            <Button 
-              type="button" 
-              variant="outline" 
+            <Button
+              type="button"
+              variant="outline"
               onClick={handleClose}
               disabled={isLoading}
             >
               Cancel
             </Button>
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               disabled={isLoading || !newName.trim()}
               className="bg-blue-600 hover:bg-blue-700 text-white"
             >

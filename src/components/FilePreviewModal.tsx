@@ -6,7 +6,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
+} from '@/components/ui/dialog'
 import { Download, ExternalLink, X } from 'lucide-react'
 
 interface FilePreviewModalProps {
@@ -20,7 +20,11 @@ interface FilePreviewModalProps {
   } | null
 }
 
-export function FilePreviewModal({ isOpen, onClose, file }: FilePreviewModalProps) {
+export function FilePreviewModal({
+  isOpen,
+  onClose,
+  file,
+}: FilePreviewModalProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [hasError, setHasError] = useState(false)
 
@@ -62,7 +66,7 @@ export function FilePreviewModal({ isOpen, onClose, file }: FilePreviewModalProp
                 {file.size} • Modified {file.modifiedAt}
               </DialogDescription>
             </div>
-            
+
             <div className="flex items-center gap-2 shrink-0 mr-4">
               <Button
                 variant="outline"

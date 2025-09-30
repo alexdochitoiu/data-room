@@ -8,14 +8,14 @@ import path from 'path'
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     // Get or create user
     let user = await prisma.user.findUnique({
-      where: { email: session.user.email }
+      where: { email: session.user.email },
     })
 
     if (!user) {
@@ -23,8 +23,8 @@ export async function POST(request: NextRequest) {
         data: {
           email: session.user.email,
           name: session.user.name,
-          image: session.user.image
-        }
+          image: session.user.image,
+        },
       })
     }
 
@@ -38,12 +38,18 @@ export async function POST(request: NextRequest) {
 
     // Validate file type
     if (file.type !== 'application/pdf') {
-      return NextResponse.json({ error: 'Only PDF files are allowed' }, { status: 400 })
+      return NextResponse.json(
+        { error: 'Only PDF files are allowed' },
+        { status: 400 }
+      )
     }
 
     // Validate file size (10MB limit)
     if (file.size > 10 * 1024 * 1024) {
-      return NextResponse.json({ error: 'File size must be less than 10MB' }, { status: 400 })
+      return NextResponse.json(
+        { error: 'File size must be less than 10MB' },
+        { status: 400 }
+      )
     }
 
     // Create uploads directory if it doesn't exist
@@ -68,30 +74,35 @@ export async function POST(request: NextRequest) {
         size: file.size,
         path: filePath,
         folderId: folderId || null,
-        userId: user.id
-      }
+        userId: user.id,
+      },
     })
 
-    return NextResponse.json({
-      id: fileRecord.id,
-      name: fileRecord.name,
-      size: formatFileSize(fileRecord.size),
-      modifiedAt: formatDate(fileRecord.createdAt)
-    }, { status: 201 })
-
+    return NextResponse.json(
+      {
+        id: fileRecord.id,
+        name: fileRecord.name,
+        size: formatFileSize(fileRecord.size),
+        modifiedAt: formatDate(fileRecord.createdAt),
+      },
+      { status: 201 }
+    )
   } catch (error) {
     console.error('Error uploading file:', error)
-    return NextResponse.json({ error: 'Failed to upload file' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Failed to upload file' },
+      { status: 500 }
+    )
   }
 }
 
 function formatFileSize(bytes: number): string {
   if (bytes === 0) return '0 Bytes'
-  
+
   const k = 1024
   const sizes = ['Bytes', 'KB', 'MB', 'GB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
-  
+
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
 
@@ -99,6 +110,6 @@ function formatDate(date: Date): string {
   return new Intl.DateTimeFormat('en-US', {
     year: 'numeric',
     month: 'short',
-    day: 'numeric'
+    day: 'numeric',
   }).format(new Date(date))
 }

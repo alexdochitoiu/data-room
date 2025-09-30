@@ -59,7 +59,8 @@ GITHUB_ID=your-github-client-id
 GITHUB_SECRET=your-github-client-secret
 ```
 
-**Important**: 
+**Important**:
+
 - Generate a strong `NEXTAUTH_SECRET` for production
 - Replace all placeholder values with your actual OAuth credentials
 

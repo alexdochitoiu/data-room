@@ -3,7 +3,6 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '../../auth/[...nextauth]/route'
 import { prisma } from '@/lib/prisma'
 import fs from 'fs-extra'
-import path from 'path'
 
 export async function GET(
   request: NextRequest,
@@ -11,7 +10,7 @@ export async function GET(
 ) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -22,8 +21,8 @@ export async function GET(
     const file = await prisma.file.findFirst({
       where: {
         id: fileId,
-        user: { email: session.user.email }
-      }
+        user: { email: session.user.email },
+      },
     })
 
     if (!file) {
@@ -31,20 +30,23 @@ export async function GET(
     }
 
     // Check if file exists on disk
-    if (!await fs.pathExists(file.path)) {
-      return NextResponse.json({ error: 'File not found on disk' }, { status: 404 })
+    if (!(await fs.pathExists(file.path))) {
+      return NextResponse.json(
+        { error: 'File not found on disk' },
+        { status: 404 }
+      )
     }
 
     // Read and serve the file
     const fileBuffer = await fs.readFile(file.path)
-    
+
     return new NextResponse(fileBuffer, {
       headers: {
         'Content-Type': file.mimeType,
         'Content-Length': file.size.toString(),
         'Content-Disposition': `inline; filename="${file.originalName}"`,
-        'Cache-Control': 'private, max-age=3600'
-      }
+        'Cache-Control': 'private, max-age=3600',
+      },
     })
   } catch (error) {
     console.error('Error serving file:', error)

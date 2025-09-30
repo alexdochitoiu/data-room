@@ -3,12 +3,7 @@
 import { useSession, signOut, signIn } from 'next-auth/react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { 
-  Home, 
-  FileText, 
-  LogOut,
-  User
-} from 'lucide-react'
+import { Home, FileText, LogOut, User } from 'lucide-react'
 import Logo from '@/components/Logo'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -49,10 +44,10 @@ export default function SidebarLayout({ children }: SidebarLayoutProps) {
 
         {/* Navigation */}
         <nav className="flex-1 px-4 space-y-1">
-          {navigation.map((item) => {
+          {navigation.map(item => {
             const isActive = pathname === item.href
             const isDisabled = !session && item.name === 'Documents'
-            
+
             if (isDisabled) {
               return (
                 <div
@@ -64,7 +59,7 @@ export default function SidebarLayout({ children }: SidebarLayoutProps) {
                 </div>
               )
             }
-            
+
             return (
               <Link
                 key={item.name}
@@ -87,13 +82,16 @@ export default function SidebarLayout({ children }: SidebarLayoutProps) {
           {session ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   className="w-full justify-start h-auto p-3 text-left hover:bg-slate-700"
                 >
                   <div className="flex items-center space-x-3 w-full">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={session.user?.image || ''} alt={session.user?.name || ''} />
+                      <AvatarImage
+                        src={session.user?.image || ''}
+                        alt={session.user?.name || ''}
+                      />
                       <AvatarFallback className="bg-blue-600 text-white">
                         {session.user?.name?.charAt(0)?.toUpperCase() || 'U'}
                       </AvatarFallback>
@@ -136,7 +134,7 @@ export default function SidebarLayout({ children }: SidebarLayoutProps) {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button 
+            <Button
               onClick={() => signIn()}
               variant="ghost"
               className="w-full !bg-transparent text-slate-300 hover:!bg-slate-700 hover:text-white border border-slate-600 hover:border-slate-500"
@@ -145,14 +143,10 @@ export default function SidebarLayout({ children }: SidebarLayoutProps) {
             </Button>
           )}
         </div>
-
-
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {children}
-      </div>
+      <div className="flex-1 flex flex-col overflow-hidden">{children}</div>
     </div>
   )
 }

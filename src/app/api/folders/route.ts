@@ -6,19 +6,25 @@ import { z } from 'zod'
 
 // Validation schemas
 const createFolderSchema = z.object({
-  name: z.string().min(1, 'Folder name is required').max(255, 'Folder name too long'),
-  parentId: z.string().optional()
+  name: z
+    .string()
+    .min(1, 'Folder name is required')
+    .max(255, 'Folder name too long'),
+  parentId: z.string().optional(),
 })
 
 const renameFolderSchema = z.object({
   id: z.string(),
-  name: z.string().min(1, 'Folder name is required').max(255, 'Folder name too long')
+  name: z
+    .string()
+    .min(1, 'Folder name is required')
+    .max(255, 'Folder name too long'),
 })
 
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -29,27 +35,30 @@ export async function GET(request: NextRequest) {
     const folders = await prisma.folder.findMany({
       where: {
         user: { email: session.user.email },
-        parentId: parentId || null
+        parentId: parentId || null,
       },
       orderBy: { name: 'asc' },
       include: {
         _count: {
-          select: { children: true, files: true }
-        }
-      }
+          select: { children: true, files: true },
+        },
+      },
     })
 
     return NextResponse.json(folders)
   } catch (error) {
     console.error('Error fetching folders:', error)
-    return NextResponse.json({ error: 'Failed to fetch folders' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Failed to fetch folders' },
+      { status: 500 }
+    )
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -59,7 +68,7 @@ export async function POST(request: NextRequest) {
 
     // Get or create user
     let user = await prisma.user.findUnique({
-      where: { email: session.user.email }
+      where: { email: session.user.email },
     })
 
     if (!user) {
@@ -67,8 +76,8 @@ export async function POST(request: NextRequest) {
         data: {
           email: session.user.email,
           name: session.user.name,
-          image: session.user.image
-        }
+          image: session.user.image,
+        },
       })
     }
 
@@ -76,7 +85,7 @@ export async function POST(request: NextRequest) {
     let path = '/'
     if (parentId) {
       const parentFolder = await prisma.folder.findFirst({
-        where: { id: parentId, userId: user.id }
+        where: { id: parentId, userId: user.id },
       })
       if (parentFolder) {
         path = `${parentFolder.path}${parentFolder.name}/`
@@ -88,13 +97,13 @@ export async function POST(request: NextRequest) {
         name,
         path,
         parentId,
-        userId: user.id
+        userId: user.id,
       },
       include: {
         _count: {
-          select: { children: true, files: true }
-        }
-      }
+          select: { children: true, files: true },
+        },
+      },
     })
 
     return NextResponse.json(folder, { status: 201 })
@@ -102,16 +111,19 @@ export async function POST(request: NextRequest) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.issues }, { status: 400 })
     }
-    
+
     console.error('Error creating folder:', error)
-    return NextResponse.json({ error: 'Failed to create folder' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Failed to create folder' },
+      { status: 500 }
+    )
   }
 }
 
 export async function PUT(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -121,7 +133,7 @@ export async function PUT(request: NextRequest) {
 
     // Get user
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email }
+      where: { email: session.user.email },
     })
 
     if (!user) {
@@ -130,7 +142,7 @@ export async function PUT(request: NextRequest) {
 
     // Check if folder exists and belongs to user
     const existingFolder = await prisma.folder.findFirst({
-      where: { id, userId: user.id }
+      where: { id, userId: user.id },
     })
 
     if (!existingFolder) {
@@ -143,12 +155,15 @@ export async function PUT(request: NextRequest) {
         name,
         parentId: existingFolder.parentId,
         userId: user.id,
-        id: { not: id } // Exclude current folder
-      }
+        id: { not: id }, // Exclude current folder
+      },
     })
 
     if (duplicateFolder) {
-      return NextResponse.json({ error: 'A folder with this name already exists in this location' }, { status: 409 })
+      return NextResponse.json(
+        { error: 'A folder with this name already exists in this location' },
+        { status: 409 }
+      )
     }
 
     // Update folder name
@@ -157,9 +172,9 @@ export async function PUT(request: NextRequest) {
       data: { name },
       include: {
         _count: {
-          select: { children: true, files: true }
-        }
-      }
+          select: { children: true, files: true },
+        },
+      },
     })
 
     return NextResponse.json(updatedFolder)
@@ -167,8 +182,11 @@ export async function PUT(request: NextRequest) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.issues }, { status: 400 })
     }
-    
+
     console.error('Error renaming folder:', error)
-    return NextResponse.json({ error: 'Failed to rename folder' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Failed to rename folder' },
+      { status: 500 }
+    )
   }
 }

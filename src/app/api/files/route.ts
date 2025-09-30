@@ -6,13 +6,16 @@ import { z } from 'zod'
 
 const renameFileSchema = z.object({
   id: z.string(),
-  name: z.string().min(1, 'File name is required').max(255, 'File name too long')
+  name: z
+    .string()
+    .min(1, 'File name is required')
+    .max(255, 'File name too long'),
 })
 
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -23,9 +26,9 @@ export async function GET(request: NextRequest) {
     const files = await prisma.file.findMany({
       where: {
         user: { email: session.user.email },
-        folderId: folderId || null
+        folderId: folderId || null,
       },
-      orderBy: { name: 'asc' }
+      orderBy: { name: 'asc' },
     })
 
     // Format the files to match the expected interface
@@ -33,23 +36,26 @@ export async function GET(request: NextRequest) {
       id: file.id,
       name: file.name,
       size: formatFileSize(file.size),
-      modifiedAt: formatDate(file.updatedAt)
+      modifiedAt: formatDate(file.updatedAt),
     }))
 
     return NextResponse.json(formattedFiles)
   } catch (error) {
     console.error('Error fetching files:', error)
-    return NextResponse.json({ error: 'Failed to fetch files' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Failed to fetch files' },
+      { status: 500 }
+    )
   }
 }
 
 function formatFileSize(bytes: number): string {
   if (bytes === 0) return '0 Bytes'
-  
+
   const k = 1024
   const sizes = ['Bytes', 'KB', 'MB', 'GB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
-  
+
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
 
@@ -57,14 +63,14 @@ function formatDate(date: Date): string {
   return new Intl.DateTimeFormat('en-US', {
     year: 'numeric',
     month: 'short',
-    day: 'numeric'
+    day: 'numeric',
   }).format(new Date(date))
 }
 
 export async function PUT(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -74,7 +80,7 @@ export async function PUT(request: NextRequest) {
 
     // Get user
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email }
+      where: { email: session.user.email },
     })
 
     if (!user) {
@@ -83,7 +89,7 @@ export async function PUT(request: NextRequest) {
 
     // Check if file exists and belongs to user
     const existingFile = await prisma.file.findFirst({
-      where: { id, userId: user.id }
+      where: { id, userId: user.id },
     })
 
     if (!existingFile) {
@@ -96,32 +102,38 @@ export async function PUT(request: NextRequest) {
         name,
         folderId: existingFile.folderId,
         userId: user.id,
-        id: { not: id } // Exclude current file
-      }
+        id: { not: id }, // Exclude current file
+      },
     })
 
     if (duplicateFile) {
-      return NextResponse.json({ error: 'A file with this name already exists in this location' }, { status: 409 })
+      return NextResponse.json(
+        { error: 'A file with this name already exists in this location' },
+        { status: 409 }
+      )
     }
 
     // Update file name
     const updatedFile = await prisma.file.update({
       where: { id },
-      data: { name, originalName: name }
+      data: { name, originalName: name },
     })
 
     return NextResponse.json({
       id: updatedFile.id,
       name: updatedFile.name,
       size: formatFileSize(updatedFile.size),
-      modifiedAt: formatDate(updatedFile.updatedAt)
+      modifiedAt: formatDate(updatedFile.updatedAt),
     })
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.issues }, { status: 400 })
     }
-    
+
     console.error('Error renaming file:', error)
-    return NextResponse.json({ error: 'Failed to rename file' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Failed to rename file' },
+      { status: 500 }
+    )
   }
 }

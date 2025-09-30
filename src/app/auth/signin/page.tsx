@@ -45,8 +45,9 @@ export default function SignIn() {
               Welcome to DataRoom
             </h2>
             <p className="text-sm leading-relaxed mb-6">
-              Your secure document management platform. Sign in to access your files, 
-              collaborate with your team, and manage your data room with confidence.
+              Your secure document management platform. Sign in to access your
+              files, collaborate with your team, and manage your data room with
+              confidence.
             </p>
             <div className="space-y-3 text-xs">
               <div className="flex items-center">
@@ -70,17 +71,15 @@ export default function SignIn() {
       <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
           <div className="text-center">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">
-              Sign In
-            </h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">Sign In</h2>
             <p className="text-gray-600">
               Choose your preferred sign-in method
             </p>
           </div>
-          
+
           <div className="space-y-3">
             {providers &&
-              Object.values(providers).map((provider) => (
+              Object.values(providers).map(provider => (
                 <Button
                   key={provider.name}
                   onClick={() => signIn(provider.id, { callbackUrl: '/' })}
@@ -90,8 +89,8 @@ export default function SignIn() {
                     provider.id === 'google'
                       ? 'border-gray-300 hover:border-red-500 hover:bg-red-50 text-gray-700 hover:text-red-600'
                       : provider.id === 'github'
-                      ? 'border-gray-300 hover:border-gray-700 hover:bg-gray-50 text-gray-700 hover:text-gray-900'
-                      : 'border-gray-300 hover:border-blue-500 hover:bg-blue-50 text-gray-700 hover:text-blue-600'
+                        ? 'border-gray-300 hover:border-gray-700 hover:bg-gray-50 text-gray-700 hover:text-gray-900'
+                        : 'border-gray-300 hover:border-blue-500 hover:bg-blue-50 text-gray-700 hover:text-blue-600'
                   }`}
                 >
                   <div className="flex items-center justify-center space-x-3 w-full">
@@ -118,7 +117,9 @@ export default function SignIn() {
                     {provider.id === 'github' && (
                       <Github className="h-5 w-5 text-gray-800" />
                     )}
-                    <span className="font-medium">Continue with {provider.name}</span>
+                    <span className="font-medium">
+                      Continue with {provider.name}
+                    </span>
                   </div>
                 </Button>
               ))}
@@ -126,7 +127,8 @@ export default function SignIn() {
 
           <div className="text-center">
             <p className="text-xs text-gray-500">
-              By signing in, you agree to our Terms of Service and Privacy Policy
+              By signing in, you agree to our Terms of Service and Privacy
+              Policy
             </p>
           </div>
         </div>

@@ -4,28 +4,26 @@ interface LoadingSpinnerProps {
   centered?: boolean
 }
 
-export default function LoadingSpinner({ 
-  size = 'md', 
-  className = '', 
-  centered = true 
+export default function LoadingSpinner({
+  size = 'md',
+  className = '',
+  centered = true,
 }: LoadingSpinnerProps) {
   const sizeClasses = {
     sm: 'h-6 w-6',
-    md: 'h-12 w-12', 
-    lg: 'h-16 w-16'
+    md: 'h-12 w-12',
+    lg: 'h-16 w-16',
   }
 
   const spinner = (
-    <div 
+    <div
       className={`animate-spin rounded-full border-b-2 border-blue-600 ${sizeClasses[size]} ${className}`}
     />
   )
 
   if (centered) {
     return (
-      <div className="flex items-center justify-center h-full">
-        {spinner}
-      </div>
+      <div className="flex items-center justify-center h-full">{spinner}</div>
     )
   }
 

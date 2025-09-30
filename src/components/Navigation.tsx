@@ -2,14 +2,14 @@
 
 import { useSession, signIn, signOut } from 'next-auth/react'
 import Link from 'next/link'
-import { 
-  Shield, 
-  LayoutDashboard, 
-  LogIn, 
-  LogOut, 
-  User, 
+import {
+  Shield,
+  LayoutDashboard,
+  LogIn,
+  LogOut,
+  User,
   Settings,
-  Home
+  Home,
 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -35,7 +35,7 @@ export default function Navigation() {
               <Shield className="h-6 w-6 text-primary" />
               <h1 className="text-xl font-bold">Data Room</h1>
             </Link>
-            
+
             {session && (
               <div className="hidden md:flex space-x-1">
                 <Button variant="ghost" size="sm" asChild>
@@ -45,7 +45,10 @@ export default function Navigation() {
                   </Link>
                 </Button>
                 <Button variant="ghost" size="sm" asChild>
-                  <Link href="/dashboard" className="flex items-center space-x-2">
+                  <Link
+                    href="/dashboard"
+                    className="flex items-center space-x-2"
+                  >
                     <LayoutDashboard className="h-4 w-4" />
                     <span>Dashboard</span>
                   </Link>
@@ -67,7 +70,10 @@ export default function Navigation() {
                   <Button variant="ghost" className="relative h-10 w-auto px-2">
                     <div className="flex items-center space-x-2">
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={session.user?.image || ''} alt={session.user?.name || ''} />
+                        <AvatarImage
+                          src={session.user?.image || ''}
+                          alt={session.user?.name || ''}
+                        />
                         <AvatarFallback>
                           {session.user?.name?.charAt(0)?.toUpperCase() || 'U'}
                         </AvatarFallback>
@@ -94,19 +100,28 @@ export default function Navigation() {
                   </div>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link href="/dashboard" className="flex items-center space-x-2">
+                    <Link
+                      href="/dashboard"
+                      className="flex items-center space-x-2"
+                    >
                       <LayoutDashboard className="h-4 w-4" />
                       <span>Dashboard</span>
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/profile" className="flex items-center space-x-2">
+                    <Link
+                      href="/profile"
+                      className="flex items-center space-x-2"
+                    >
                       <User className="h-4 w-4" />
                       <span>Profile</span>
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/settings" className="flex items-center space-x-2">
+                    <Link
+                      href="/settings"
+                      className="flex items-center space-x-2"
+                    >
                       <Settings className="h-4 w-4" />
                       <span>Settings</span>
                     </Link>
@@ -122,7 +137,10 @@ export default function Navigation() {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Button onClick={() => signIn()} className="flex items-center space-x-2">
+              <Button
+                onClick={() => signIn()}
+                className="flex items-center space-x-2"
+              >
                 <LogIn className="h-4 w-4" />
                 <span>Sign In</span>
               </Button>

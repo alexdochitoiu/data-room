@@ -9,10 +9,10 @@ interface LogoProps {
   clickable?: boolean
 }
 
-export default function Logo({ 
-  className = "", 
-  showTagline = true, 
-  clickable = true 
+export default function Logo({
+  className = '',
+  showTagline = true,
+  clickable = true,
 }: LogoProps) {
   const logoContent = (
     <div className={`flex items-center ${className}`}>

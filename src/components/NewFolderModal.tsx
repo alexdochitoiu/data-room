@@ -1,7 +1,18 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { useState } from 'react'
+
+interface FolderType {
+  id: string
+  name: string
+  path: string
+  parentId?: string | null
+  createdAt: string
+  _count: {
+    children: number
+    files: number
+  }
+}
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
   Dialog,
   DialogContent,
@@ -9,13 +20,13 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog'
 
 interface NewFolderModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onFolderCreated: (folder: any) => void;
-  parentId?: string;
+  isOpen: boolean
+  onClose: () => void
+  onFolderCreated: (folder: FolderType) => void
+  parentId?: string
 }
 
 export function NewFolderModal({
@@ -24,54 +35,54 @@ export function NewFolderModal({
   onFolderCreated,
   parentId,
 }: NewFolderModalProps) {
-  const [folderName, setFolderName] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [folderName, setFolderName] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
 
     if (!folderName.trim()) {
-      setError("Folder name is required");
-      return;
+      setError('Folder name is required')
+      return
     }
 
-    setIsLoading(true);
-    setError("");
+    setIsLoading(true)
+    setError('')
 
     try {
-      const response = await fetch("/api/folders", {
-        method: "POST",
+      const response = await fetch('/api/folders', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           name: folderName.trim(),
           parentId,
         }),
-      });
+      })
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to create folder");
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to create folder')
       }
 
-      const folder = await response.json();
-      onFolderCreated(folder);
-      setFolderName("");
-      onClose();
+      const folder = await response.json()
+      onFolderCreated(folder)
+      setFolderName('')
+      onClose()
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create folder");
+      setError(err instanceof Error ? err.message : 'Failed to create folder')
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const handleClose = () => {
-    setFolderName("");
-    setError("");
-    onClose();
-  };
+    setFolderName('')
+    setError('')
+    onClose()
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -87,7 +98,7 @@ export function NewFolderModal({
             <Input
               id="name"
               value={folderName}
-              onChange={(e) => setFolderName(e.target.value)}
+              onChange={e => setFolderName(e.target.value)}
               className="flex-1"
               placeholder="Enter folder name"
               disabled={isLoading}
@@ -106,16 +117,16 @@ export function NewFolderModal({
             >
               Cancel
             </Button>
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               disabled={isLoading}
               className="bg-blue-600 hover:bg-blue-700 text-white"
             >
-              {isLoading ? "Creating..." : "Create Folder"}
+              {isLoading ? 'Creating...' : 'Create Folder'}
             </Button>
           </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma'
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -22,8 +22,8 @@ export async function GET(request: NextRequest) {
     const folder = await prisma.folder.findFirst({
       where: {
         id: folderId,
-        user: { email: session.user.email }
-      }
+        user: { email: session.user.email },
+      },
     })
 
     if (!folder) {
@@ -38,15 +38,15 @@ export async function GET(request: NextRequest) {
       breadcrumbs.unshift({
         id: currentFolder.id,
         name: currentFolder.name,
-        path: currentFolder.path
+        path: currentFolder.path,
       })
 
       if (currentFolder.parentId) {
         currentFolder = await prisma.folder.findFirst({
           where: {
             id: currentFolder.parentId,
-            user: { email: session.user.email }
-          }
+            user: { email: session.user.email },
+          },
         })
       } else {
         currentFolder = null
@@ -56,6 +56,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(breadcrumbs)
   } catch (error) {
     console.error('Error fetching breadcrumbs:', error)
-    return NextResponse.json({ error: 'Failed to fetch breadcrumbs' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Failed to fetch breadcrumbs' },
+      { status: 500 }
+    )
   }
 }
