@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FolderPlus, Upload, Folder, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,7 +8,7 @@ import { Breadcrumbs } from './Breadcrumbs';
 import { Modals } from './Modals';
 import { ItemActionsDropdown } from './ItemActionsDropdown';
 import { SearchBar } from './SearchBar';
-import { FileType, FolderType } from '@/types/types';
+import { FileType, FolderType, ExtendedFileType } from '@/types/types';
 import { useDocumentViewStore } from '@/stores/documentViewStore';
 
 interface DocumentViewProps {
@@ -36,6 +36,7 @@ export default function DocumentView({
     setCurrentFolderId,
     loadFolders,
     loadFiles,
+    loadAllFiles,
 
     // Modal actions (only the open actions are needed)
     openNewFolderModal,
@@ -53,11 +54,15 @@ export default function DocumentView({
 
   // Load data when current folder changes
   useEffect(() => {
-    if (!showOnlyFiles) {
+    if (showOnlyFiles) {
+      // When showing only files, load all files from all folders
+      loadAllFiles();
+    } else {
+      // Normal folder view
       loadFolders(currentFolderId);
+      loadFiles(currentFolderId);
     }
-    loadFiles(currentFolderId);
-  }, [currentFolderId, showOnlyFiles, loadFolders, loadFiles]);
+  }, [currentFolderId, showOnlyFiles, loadFolders, loadFiles, loadAllFiles]);
 
   // Event handlers
   const handleFileClick = (file: FileType) => {
@@ -83,14 +88,22 @@ export default function DocumentView({
     router.push(`${currentPath}?folder=${folderId}`);
   };
 
-  const filteredFolders = showOnlyFiles
-    ? []
-    : folders.filter(folder =>
-        folder.name.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+  const filteredFolders = useMemo(
+    () =>
+      showOnlyFiles
+        ? []
+        : folders.filter(folder =>
+            folder.name.toLowerCase().includes(searchQuery.toLowerCase())
+          ),
+    [showOnlyFiles, folders, searchQuery]
+  );
 
-  const filteredFiles = files.filter(file =>
-    file.name.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredFiles = useMemo(
+    () =>
+      files.filter(file =>
+        file.name.toLowerCase().includes(searchQuery.toLowerCase())
+      ),
+    [files, searchQuery]
   );
 
   return (
@@ -187,26 +200,32 @@ export default function DocumentView({
             ))}
 
             {/* Files */}
-            {filteredFiles.map(file => (
-              <div
-                key={file.id}
-                className="flex items-center p-3 rounded-lg hover:bg-gray-50 cursor-pointer group"
-                onClick={() => handleFileClick(file)}
-              >
-                <FileText className="h-8 w-8 text-gray-500 mr-4" />
-                <div className="flex-1">
-                  <h4 className="font-medium text-gray-900">{file.name}</h4>
-                  <p className="text-sm text-gray-500">
-                    {file.size} • {file.modifiedAt}
-                  </p>
+            {filteredFiles.map(file => {
+              const extendedFile = file as ExtendedFileType;
+              return (
+                <div
+                  key={file.id}
+                  className="flex items-center p-3 rounded-lg hover:bg-gray-50 cursor-pointer group"
+                  onClick={() => handleFileClick(file)}
+                >
+                  <FileText className="h-8 w-8 text-gray-500 mr-4" />
+                  <div className="flex-1">
+                    <h4 className="font-medium text-gray-900">{file.name}</h4>
+                    <p className="text-sm text-gray-500">
+                      {file.size} • {file.modifiedAt}
+                      {showOnlyFiles && extendedFile.folderPath && (
+                        <> • in {extendedFile.folderPath}</>
+                      )}
+                    </p>
+                  </div>
+                  <ItemActionsDropdown
+                    item={file}
+                    onRename={handleRename}
+                    onDelete={handleDelete}
+                  />
                 </div>
-                <ItemActionsDropdown
-                  item={file}
-                  onRename={handleRename}
-                  onDelete={handleDelete}
-                />
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

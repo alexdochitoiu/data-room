@@ -6,7 +6,7 @@ import { formatDate, formatFileSize } from '@/lib/utils';
 import { renameFileSchema, deleteFileSchema } from './validations';
 import z from 'zod';
 import fs from 'fs-extra';
-import { FileType } from '@/types/types';
+import { FileType, ExtendedFileType } from '@/types/types';
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,22 +18,54 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const folderId = searchParams.get('folderId');
+    const allFiles = searchParams.get('allFiles') === 'true';
+
+    // If allFiles is requested, return all files from all folders
+    const whereClause = allFiles
+      ? { user: { email: session.user.email } }
+      : {
+          user: { email: session.user.email },
+          folderId: folderId || null,
+        };
 
     const files = await prisma.file.findMany({
-      where: {
-        user: { email: session.user.email },
-        folderId: folderId || null,
-      },
+      where: whereClause,
+      include: allFiles
+        ? {
+            folder: {
+              select: {
+                name: true,
+              },
+            },
+          }
+        : undefined,
       orderBy: { name: 'asc' },
     });
 
     // Format the files to match the expected interface
-    const formattedFiles = files.map<FileType>(file => ({
-      id: file.id,
-      name: file.name,
-      size: formatFileSize(file.size),
-      modifiedAt: formatDate(file.updatedAt),
-    }));
+    const formattedFiles = files.map<ExtendedFileType>(file => {
+      const baseFile = {
+        id: file.id,
+        name: file.name,
+        size: formatFileSize(file.size),
+        modifiedAt: formatDate(file.updatedAt),
+      };
+
+      // Add folder path if we're showing all files and file has a folder
+      if (allFiles && 'folder' in file && file.folder) {
+        const fileWithFolder = file as typeof file & {
+          folder: { name: string } | null;
+        };
+        if (fileWithFolder.folder) {
+          return {
+            ...baseFile,
+            folderPath: fileWithFolder.folder.name,
+          };
+        }
+      }
+
+      return baseFile;
+    });
 
     return NextResponse.json(formattedFiles);
   } catch (error) {

@@ -81,6 +81,7 @@ interface DocumentViewState {
   // API actions
   loadFolders: (parentId?: string | null) => Promise<void>;
   loadFiles: (folderId?: string | null) => Promise<void>;
+  loadAllFiles: () => Promise<void>;
   loadBreadcrumbs: (folderId?: string | null) => Promise<void>;
   deleteItem: (id: string, type: 'folder' | 'file') => Promise<void>;
 }
@@ -212,6 +213,21 @@ export const useDocumentViewStore = create<DocumentViewState>((set, get) => ({
       }
     } catch (error) {
       console.error('Failed to load files:', error);
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  loadAllFiles: async () => {
+    set({ isLoading: true });
+    try {
+      const response = await fetch('/api/files?allFiles=true');
+      if (response.ok) {
+        const data = await response.json();
+        set({ files: data });
+      }
+    } catch (error) {
+      console.error('Failed to load all files:', error);
     } finally {
       set({ isLoading: false });
     }
