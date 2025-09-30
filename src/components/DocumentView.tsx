@@ -9,18 +9,13 @@ import {
   FileText,
   MoreHorizontal,
   Search,
-  Home,
   Edit,
   Trash2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { NewFolderModal } from './modals/NewFolderModal';
-import { FileUploadModal } from './modals/FileUploadModal';
-import { FilePreviewModal } from './modals/FilePreviewModal';
-import { RenameModal } from './modals/RenameModal';
-import { DeleteConfirmationModal } from './modals/DeleteConfirmationModal';
 import { Breadcrumbs } from './Breadcrumbs';
+import { Modals } from './Modals';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -50,37 +45,19 @@ export default function DocumentView({
     currentFolderId,
     searchQuery,
     isLoading,
-    isNewFolderModalOpen,
-    isFileUploadModalOpen,
-    isFilePreviewModalOpen,
-    isRenameModalOpen,
-    isDeleteModalOpen,
-    selectedFile,
-    itemToRename,
-    itemToDelete,
 
     // Actions
     setCurrentFolderId,
     setSearchQuery,
-    addFolder,
-    addFile,
-    updateFolder,
-    updateFile,
     loadFolders,
     loadFiles,
-    deleteItem,
 
-    // Modal actions
+    // Modal actions (only the open actions are needed)
     openNewFolderModal,
-    closeNewFolderModal,
     openFileUploadModal,
-    closeFileUploadModal,
     openFilePreviewModal,
-    closeFilePreviewModal,
     openRenameModal,
-    closeRenameModal,
     openDeleteModal,
-    closeDeleteModal,
   } = useDocumentViewStore();
 
   // Initialize current folder from URL
@@ -98,14 +75,6 @@ export default function DocumentView({
   }, [currentFolderId, showOnlyFiles, loadFolders, loadFiles]);
 
   // Event handlers
-  const handleFolderCreated = (folder: FolderType) => {
-    addFolder(folder);
-  };
-
-  const handleFileUploaded = (file: FileType) => {
-    addFile(file);
-  };
-
   const handleFileClick = (file: FileType) => {
     openFilePreviewModal(file);
   };
@@ -118,25 +87,12 @@ export default function DocumentView({
     openRenameModal({ id: file.id, name: file.name, type: 'file' });
   };
 
-  const handleItemRenamed = (renamedItem: FolderType | FileType) => {
-    if (itemToRename?.type === 'folder') {
-      updateFolder(renamedItem.id, renamedItem);
-    } else if (itemToRename?.type === 'file') {
-      updateFile(renamedItem.id, renamedItem);
-    }
-  };
-
   const handleDeleteFolder = (folder: FolderType) => {
     openDeleteModal({ id: folder.id, name: folder.name, type: 'folder' });
   };
 
   const handleDeleteFile = (file: FileType) => {
     openDeleteModal({ id: file.id, name: file.name, type: 'file' });
-  };
-
-  const confirmDelete = async () => {
-    if (!itemToDelete) return;
-    await deleteItem(itemToDelete.id, itemToDelete.type);
   };
 
   const handleFolderClick = (folderId: string) => {
@@ -342,47 +298,8 @@ export default function DocumentView({
         )}
       </div>
 
-      {/* New Folder Modal */}
-      <NewFolderModal
-        isOpen={isNewFolderModalOpen}
-        onClose={closeNewFolderModal}
-        onFolderCreated={handleFolderCreated}
-        parentId={currentFolderId || undefined}
-      />
-
-      {/* File Upload Modal */}
-      <FileUploadModal
-        isOpen={isFileUploadModalOpen}
-        onClose={closeFileUploadModal}
-        onFileUploaded={handleFileUploaded}
-        folderId={currentFolderId || undefined}
-      />
-
-      {/* File Preview Modal */}
-      <FilePreviewModal
-        isOpen={isFilePreviewModalOpen}
-        onClose={closeFilePreviewModal}
-        file={selectedFile}
-      />
-
-      {/* Rename Modal */}
-      <RenameModal
-        isOpen={isRenameModalOpen}
-        onClose={closeRenameModal}
-        onRenamed={handleItemRenamed}
-        item={itemToRename}
-      />
-
-      {/* Delete Confirmation Modal */}
-      <DeleteConfirmationModal
-        isOpen={isDeleteModalOpen}
-        onClose={closeDeleteModal}
-        onConfirm={confirmDelete}
-        title={`Delete ${itemToDelete?.type || 'Item'}`}
-        description={`Are you sure you want to delete this ${itemToDelete?.type || 'item'}?`}
-        itemName={itemToDelete?.name || ''}
-        itemType={itemToDelete?.type || 'file'}
-      />
+      {/* Modals */}
+      <Modals />
     </div>
   );
 }
