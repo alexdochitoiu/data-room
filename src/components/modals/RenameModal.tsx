@@ -91,7 +91,8 @@ export function RenameModal({
       onRenamed(renamedItem);
       handleClose();
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : `Failed to rename ${item?.type}`;
+      const errorMsg =
+        err instanceof Error ? err.message : `Failed to rename ${item?.type}`;
       setError(errorMsg);
       toast.error(`Rename failed: ${errorMsg}`);
     } finally {

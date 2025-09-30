@@ -97,7 +97,10 @@ export async function POST(request: NextRequest) {
       }
     } else if (existingFile && resolution === 'overwrite') {
       // Delete from cloud storage if using Vercel Blob
-      if (storageMethod === 'vercel-blob' && existingFile.path.includes('vercel-storage.com')) {
+      if (
+        storageMethod === 'vercel-blob' &&
+        existingFile.path.includes('vercel-storage.com')
+      ) {
         try {
           const { del } = await import('@vercel/blob');
           await del(existingFile.path, {

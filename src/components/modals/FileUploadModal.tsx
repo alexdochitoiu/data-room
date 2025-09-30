@@ -127,7 +127,8 @@ export function FileUploadModal({
       onFileUploaded(uploadedFile);
       handleClose();
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Failed to upload file';
+      const errorMsg =
+        err instanceof Error ? err.message : 'Failed to upload file';
       setError(errorMsg);
       toast.error(`Upload failed: ${errorMsg}`);
     } finally {

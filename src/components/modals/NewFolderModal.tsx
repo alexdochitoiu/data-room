@@ -64,7 +64,8 @@ export function NewFolderModal({
       setFolderName('');
       onClose();
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Failed to create folder';
+      const errorMsg =
+        err instanceof Error ? err.message : 'Failed to create folder';
       setError(errorMsg);
       toast.error(`Failed to create folder: ${errorMsg}`);
     } finally {

@@ -4,7 +4,9 @@ export async function uploadToVercelBlob(
 ): Promise<{ url: string }> {
   // Check if token is available
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
-    throw new Error('BLOB_READ_WRITE_TOKEN is not configured. Please set up Vercel Blob storage.');
+    throw new Error(
+      'BLOB_READ_WRITE_TOKEN is not configured. Please set up Vercel Blob storage.'
+    );
   }
 
   const { put } = await import('@vercel/blob');

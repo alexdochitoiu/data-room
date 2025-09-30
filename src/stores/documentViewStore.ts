@@ -271,10 +271,14 @@ export const useDocumentViewStore = create<DocumentViewState>((set, get) => ({
         get().removeFile(id);
       }
 
-      toast.success(`${type === 'folder' ? 'Folder' : 'File'} deleted successfully`);
+      toast.success(
+        `${type === 'folder' ? 'Folder' : 'File'} deleted successfully`
+      );
     } catch (error) {
       console.error(`Failed to delete ${type}:`, error);
-      toast.error(`Failed to delete ${type}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      toast.error(
+        `Failed to delete ${type}: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
       throw error;
     }
   },
