@@ -1,47 +1,76 @@
-import NextAuth from 'next-auth';
+import NextAuth from 'next-auth/next';
 import GoogleProvider from 'next-auth/providers/google';
 import GitHubProvider from 'next-auth/providers/github';
-import type { NextAuthOptions } from 'next-auth';
 
-export const authOptions: NextAuthOptions = {
+interface JWTParams {
+  token: Record<string, unknown> & { id?: string };
+  user?: {
+    id: string;
+    email?: string | null;
+    name?: string | null;
+    image?: string | null;
+  };
+}
+
+interface SessionParams {
+  session: {
+    expires: string;
+    user?: {
+      id?: string;
+      email?: string | null;
+      name?: string | null;
+      image?: string | null;
+    };
+  };
+  token: Record<string, unknown> & { id: string };
+}
+
+interface RedirectParams {
+  url: string;
+  baseUrl: string;
+}
+
+const authOptions = {
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
     GitHubProvider({
-      clientId: process.env.GITHUB_ID!,
-      clientSecret: process.env.GITHUB_SECRET!,
+      clientId: process.env.GITHUB_CLIENT_ID!,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET!,
     }),
   ],
-  pages: {
-    signIn: '/auth/signin',
-  },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt(params: JWTParams) {
+      const { token, user } = params;
       if (user) {
         token.id = user.id;
       }
-      return token;
+      return { ...token, id: token.id || 'default-id' };
     },
-    async session({ session, token }) {
-      if (token && session.user) {
+    async session(params: SessionParams) {
+      const { session, token } = params;
+      if (session.user) {
         session.user.id = token.id as string;
       }
       return session;
     },
-    async redirect({ url, baseUrl }) {
-      // Redirect to home page after successful login
+    async redirect(params: RedirectParams) {
+      const { url, baseUrl } = params;
       if (url.startsWith('/')) return `${baseUrl}${url}`;
       else if (new URL(url).origin === baseUrl) return url;
       return baseUrl;
     },
   },
+  pages: {
+    signIn: '/auth/signin',
+    error: '/auth/error',
+  },
   session: {
-    strategy: 'jwt',
+    strategy: 'jwt' as const,
   },
 };
 
 const handler = NextAuth(authOptions);
-
-export { handler as GET, handler as POST };
+export { handler as GET, handler as POST, authOptions };

@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../../auth/[...nextauth]/route';
 import { prisma } from '@/lib/prisma';
 import fs from 'fs-extra';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { fileId: string } }
+  { params }: { params: Promise<{ fileId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -15,7 +15,8 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const fileId = params.fileId;
+    const resolvedParams = await params;
+    const fileId = resolvedParams.fileId;
 
     // Get file from database and verify ownership
     const file = await prisma.file.findFirst({
