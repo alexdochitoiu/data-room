@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { BreadcrumbData, FileType, FolderType } from '@/types/types';
+import toast from 'react-hot-toast';
 
 interface DocumentViewState {
   folders: FolderType[];
@@ -187,6 +188,7 @@ export const useDocumentViewStore = create<DocumentViewState>((set, get) => ({
       }
     } catch (error) {
       console.error('Failed to load folders:', error);
+      toast.error('Failed to load folders');
     } finally {
       set({ isLoading: false });
     }
@@ -203,6 +205,7 @@ export const useDocumentViewStore = create<DocumentViewState>((set, get) => ({
       }
     } catch (error) {
       console.error('Failed to load files:', error);
+      toast.error('Failed to load files');
     } finally {
       set({ isLoading: false });
     }
@@ -218,6 +221,7 @@ export const useDocumentViewStore = create<DocumentViewState>((set, get) => ({
       }
     } catch (error) {
       console.error('Failed to load all files:', error);
+      toast.error('Failed to load files');
     } finally {
       set({ isLoading: false });
     }
@@ -239,6 +243,7 @@ export const useDocumentViewStore = create<DocumentViewState>((set, get) => ({
       }
     } catch (error) {
       console.error('Failed to load breadcrumbs:', error);
+      toast.error('Failed to load navigation');
       set({ breadcrumbs: [] });
     }
   },
@@ -246,22 +251,31 @@ export const useDocumentViewStore = create<DocumentViewState>((set, get) => ({
   deleteItem: async (id, type) => {
     const endpoint = type === 'folder' ? '/api/folders' : '/api/files';
 
-    const response = await fetch(endpoint, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ id }),
-    });
+    try {
+      const response = await fetch(endpoint, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id }),
+      });
 
-    if (!response.ok) {
-      throw new Error(`Failed to delete ${type}`);
-    }
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Failed to delete ${type}`);
+      }
 
-    if (type === 'folder') {
-      get().removeFolder(id);
-    } else {
-      get().removeFile(id);
+      if (type === 'folder') {
+        get().removeFolder(id);
+      } else {
+        get().removeFile(id);
+      }
+
+      toast.success(`${type === 'folder' ? 'Folder' : 'File'} deleted successfully`);
+    } catch (error) {
+      console.error(`Failed to delete ${type}:`, error);
+      toast.error(`Failed to delete ${type}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw error;
     }
   },
 }));

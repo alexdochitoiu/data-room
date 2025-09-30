@@ -11,6 +11,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { FileType, FolderType } from '@/types/types';
+import toast from 'react-hot-toast';
 
 interface RenameModalProps {
   isOpen: boolean;
@@ -54,7 +55,9 @@ export function RenameModal({
     e.preventDefault();
 
     if (!item || !newName.trim()) {
-      setError('Name is required');
+      const errorMsg = 'Name is required';
+      setError(errorMsg);
+      toast.error(errorMsg);
       return;
     }
 
@@ -88,9 +91,9 @@ export function RenameModal({
       onRenamed(renamedItem);
       handleClose();
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : `Failed to rename ${item?.type}`
-      );
+      const errorMsg = err instanceof Error ? err.message : `Failed to rename ${item?.type}`;
+      setError(errorMsg);
+      toast.error(`Rename failed: ${errorMsg}`);
     } finally {
       setIsLoading(false);
     }

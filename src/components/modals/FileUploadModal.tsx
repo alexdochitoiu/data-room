@@ -12,6 +12,7 @@ import {
 import { Upload, File, X } from 'lucide-react';
 import { formatFileSize } from '@/lib/utils';
 import { FileType } from '@/types/types';
+import toast from 'react-hot-toast';
 
 interface FileUploadModalProps {
   isOpen: boolean;
@@ -35,15 +36,17 @@ export function FileUploadModal({
   const { openFileConflictModal } = useDocumentViewStore();
 
   const handleFileSelect = (file: File) => {
-    // Validate file type
     if (file.type !== 'application/pdf') {
-      setError('Only PDF files are allowed');
+      const errorMsg = 'Only PDF files are allowed';
+      setError(errorMsg);
+      toast.error(errorMsg);
       return;
     }
 
-    // Validate file size (10MB limit)
     if (file.size > 10 * 1024 * 1024) {
-      setError('File size must be less than 10MB');
+      const errorMsg = 'File size must be less than 10MB';
+      setError(errorMsg);
+      toast.error(errorMsg);
       return;
     }
 
@@ -124,7 +127,9 @@ export function FileUploadModal({
       onFileUploaded(uploadedFile);
       handleClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to upload file');
+      const errorMsg = err instanceof Error ? err.message : 'Failed to upload file';
+      setError(errorMsg);
+      toast.error(`Upload failed: ${errorMsg}`);
     } finally {
       setIsUploading(false);
     }

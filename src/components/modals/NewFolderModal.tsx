@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { FolderType } from '@/types/types';
+import toast from 'react-hot-toast';
 
 interface NewFolderModalProps {
   isOpen: boolean;
@@ -32,7 +33,9 @@ export function NewFolderModal({
     e.preventDefault();
 
     if (!folderName.trim()) {
-      setError('Folder name is required');
+      const errorMsg = 'Folder name is required';
+      setError(errorMsg);
+      toast.error(errorMsg);
       return;
     }
 
@@ -61,7 +64,9 @@ export function NewFolderModal({
       setFolderName('');
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create folder');
+      const errorMsg = err instanceof Error ? err.message : 'Failed to create folder';
+      setError(errorMsg);
+      toast.error(`Failed to create folder: ${errorMsg}`);
     } finally {
       setIsLoading(false);
     }

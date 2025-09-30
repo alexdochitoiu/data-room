@@ -8,6 +8,7 @@ import { DeleteConfirmationModal } from './modals/DeleteConfirmationModal';
 import { FileConflictModal } from './modals/FileConflictModal';
 import { FileType, FolderType, ConflictResolution } from '@/types/types';
 import { useDocumentViewStore } from '@/stores/documentViewStore';
+import toast from 'react-hot-toast';
 
 export function Modals() {
   const {
@@ -39,20 +40,28 @@ export function Modals() {
 
   const handleFolderCreated = (folder: FolderType) => {
     addFolder(folder);
+    toast.success('Folder created successfully');
   };
 
   const handleFileUploaded = (file: FileType) => {
     addFile(file);
+    toast.success('File uploaded successfully');
   };
 
   const handleItemRenamed = (renamedItem: FolderType | FileType) => {
     // Determine type based on the renamedItem structure
     // Files have properties like size, folders don't have _count
-    if ('size' in renamedItem) {
+    const itemType = 'size' in renamedItem ? 'file' : 'folder';
+
+    if (itemType === 'file') {
       updateFile(renamedItem.id, renamedItem);
     } else {
       updateFolder(renamedItem.id, renamedItem);
     }
+
+    toast.success(
+      `${itemType === 'file' ? 'File' : 'Folder'} renamed successfully`
+    );
   };
 
   const handleConfirmDelete = async () => {
@@ -89,7 +98,9 @@ export function Modals() {
       handleFileUploaded(uploadedFile);
     } catch (error) {
       console.error('Failed to resolve file conflict:', error);
-      // You might want to show an error message here
+      toast.error(
+        `Failed to upload file: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   };
 
